@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Callbacks: cuando la web responde | Aula Código</title>
+  <title>Callbacks: when the web responds | Code Classroom</title>
   <style>
     :root { --ink:#161616; --paper:#f8f7f3; --red:#e52525; --muted:#696969; --line:#d9d8d3; --dark:#191919; }
     * { box-sizing:border-box; }
@@ -60,68 +60,68 @@
 </head>
 <body>
   <div class="topline"></div>
-  <header class="masthead"><div class="brand">AULA<span>/</span>CÓDIGO</div><div class="edition">Tecnología &amp; programación<br>Edición educativa · Bachillerato</div></header>
-  <nav class="nav" aria-label="Navegación"><a href="#que-es">Concepto</a><a href="#ejemplo">Ejemplo</a><a href="#laboratorio">Laboratorio interactivo</a></nav>
+  <header class="masthead"><div class="brand">CODE<span>/</span>CLASS</div><div class="edition">Technology &amp; programming<br>Educational edition · High school</div></header>
+  <nav class="nav" aria-label="Navigation"><a href="#que-es">Concept</a><a href="#ejemplo">Example</a><a href="#laboratorio">Interactive lab</a></nav>
   <main>
     <header class="hero">
-      <div class="eyebrow">Programación web / JavaScript</div>
-      <h1>Callbacks: el código que espera su momento</h1>
-      <p class="deck">¿Cómo sabe una página cuándo hiciste clic, copiaste algo o seleccionaste texto? La respuesta está en los eventos y las funciones <em>callback</em>.</p>
-      <div class="byline"><span>Guía para bachillerato</span><span>Lectura: 5 minutos</span><span>Incluye 2 experimentos</span></div>
+      <div class="eyebrow">Web programming / JavaScript</div>
+      <h1>Callbacks: the code that waits its turn</h1>
+      <p class="deck">How does a page know when you clicked, copied something, or selected text? The answer lies in events and <em>callback</em> functions.</p>
+      <div class="byline"><span>High school guide</span><span>Reading time: 5 minutes</span><span>Includes 2 experiments</span></div>
     </header>
     <div class="article">
       <article class="prose" id="que-es">
-        <p class="dropcap">Imagina que pides una pizza y dejas tu número de teléfono. No necesitas llamar cada minuto para preguntar si ya llegó. La pizzería te avisará cuando esté lista. Una función <em>callback</em> trabaja con una idea parecida: es una función que entregas a otro código para que la ejecute cuando corresponda.</p>
-        <h2>¿Qué es un evento?</h2>
-        <p>Un <strong>evento</strong> es algo que ocurre dentro de la página: hacer clic, presionar una tecla, copiar texto o seleccionar un fragmento. JavaScript puede <strong>escuchar</strong> estos eventos y responder.</p>
-        <div class="formula">Evento → se activa un listener → se ejecuta el callback</div>
-        <p>En HTML se encuentran atributos como <code>onclick</code> u <code>oncopy</code>, pero para separar el contenido del comportamiento, normalmente usamos <code>addEventListener()</code> desde JavaScript.</p>
-        <h2 id="ejemplo">Un ejemplo en tres líneas</h2>
-        <pre><code>const boton = document.querySelector('#saludar');
-boton.addEventListener('click', function () {
-  alert('¡Hola, clase!');
+        <p class="dropcap">Imagine that you order a pizza and leave your phone number. You do not need to call every minute to ask whether it has arrived. The pizzeria will let you know when it is ready. A <em>callback</em> function works with a similar idea: it is a function you give to other code so it can run it when appropriate.</p>
+        <h2>What is an event?</h2>
+        <p>An <strong>event</strong> is something that happens within the page: clicking, pressing a key, copying text, or selecting a fragment. JavaScript can <strong>listen</strong> for these events and respond.</p>
+        <div class="formula">Event → a listener is activated → the callback runs</div>
+        <p>HTML includes attributes such as <code>onclick</code> and <code>oncopy</code>, but to separate content from behavior, we normally use <code>addEventListener()</code> from JavaScript.</p>
+        <h2 id="ejemplo">An example in three lines</h2>
+        <pre><code>const button = document.querySelector('#saludar');
+button.addEventListener('click', function () {
+  alert('Hello, class!');
 });</code></pre>
-        <p>El navegador guarda la función y la ejecuta <strong>después</strong>, cuando ocurre el clic. Esa función entregada como argumento es el <em>callback</em>. Observa que no escribimos <code>function() {...}()</code>: eso la ejecutaría inmediatamente.</p>
-        <button id="saludar" type="button">Probar el clic</button>
-        <p class="hint">Pista: el navegador también pasa un objeto <code>event</code> al callback, con información sobre lo que sucedió.</p>
+        <p>The browser stores the function and runs it <strong>later</strong>, when the click occurs. That function passed as an argument is the <em>callback</em>. Notice that we do not write <code>function() {...}()</code>: that would run it immediately.</p>
+        <button id="saludar" type="button">Test the click</button>
+        <p class="hint">Tip: the browser also passes an <code>event</code> object to the callback, with information about what happened.</p>
       </article>
-      <aside class="rail"><strong>Palabras clave</strong><p><b>Evento:</b> una acción detectada por el navegador.</p><p><b>Listener:</b> código que se mantiene atento a un evento.</p><p><b>Callback:</b> función que se ejecuta en respuesta.</p><p><b>Clipboard:</b> portapapeles donde se guarda lo que copias.</p></aside>
+      <aside class="rail"><strong>Key terms</strong><p><b>Event:</b> an action detected by the browser.</p><p><b>Listener:</b> code that stays alert for an event.</p><p><b>Callback:</b> a function that runs when appropriate.</p><p><b>Clipboard:</b> the place where copied content is stored.</p></aside>
     </div>
     <section id="laboratorio" aria-labelledby="lab-title">
-      <header class="lab-intro"><div class="eyebrow">Laboratorio / Aprende haciendo</div><h2 class="section-head" id="lab-title">Dos eventos, dos sorpresas</h2><p>Prueba cada experimento. Después, revisa su fragmento de JavaScript y explica a un compañero qué activó la función.</p></header>
+      <header class="lab-intro"><div class="eyebrow">Lab / Learn by doing</div><h2 class="section-head" id="lab-title">Two events, two surprises</h2><p>Try each experiment. Then review its JavaScript snippet and explain to a classmate what triggered the function.</p></header>
       <div class="lab-grid">
         <section class="lab" aria-labelledby="copy-title">
-          <div class="lab-number">01 / Evento copy</div><h3 id="copy-title">Copiar no siempre es copiar</h3>
-          <p>Selecciona la oración en inglés y cópiala usando <b>Ctrl+C</b> (o <b>⌘+C</b> en Mac). Después, pégala en el cuadro o en un editor de texto.</p>
+          <div class="lab-number">01 / Copy event</div><h3 id="copy-title">Copying is not always copying</h3>
+          <p>Select the English sentence and copy it using <b>Ctrl+C</b> (or <b>⌘+C</b> on Mac). Then paste it into the box or a text editor.</p>
           <div class="challenge" id="copy-source">Try to copy this text and paste it somewhere like a text editor</div>
-          <label for="paste-area" class="hint">Zona para pegar y comprobar el resultado:</label>
-          <textarea id="paste-area" placeholder="Pega aquí con Ctrl+V / ⌘+V..."></textarea>
-          <div class="state" id="copy-status" role="status" aria-live="polite">Esperando a que copies el texto…</div>
+          <label for="paste-area" class="hint">Paste area to check the result:</label>
+          <textarea id="paste-area" placeholder="Paste here with Ctrl+V / ⌘+V..."></textarea>
+          <div class="state" id="copy-status" role="status" aria-live="polite">Waiting for you to copy the text…</div>
           <pre><code>copySource.addEventListener('copy', (event) => {
   event.preventDefault();
   event.clipboardData.setData('text/plain',
     'See what I mean?, you copied this text instead of the original text'
   );
 });</code></pre>
-          <p class="hint">¿Qué sucedió? <code>preventDefault()</code> cancela la copia normal y <code>clipboardData.setData()</code> escribe otro texto en el portapapeles.</p>
+          <p class="hint">What happened? <code>preventDefault()</code> cancels the normal copy and <code>clipboardData.setData()</code> writes different text to the clipboard.</p>
         </section>
         <section class="lab" aria-labelledby="select-title">
-          <div class="lab-number">02 / Evento mouseup + selección</div><h3 id="select-title">El texto que te descubre</h3>
-          <p>Selecciona con el mouse una parte de la oración de abajo. Abre la consola con <b>F12 → Console</b> para ver el mensaje.</p>
-          <div class="challenge" id="select-source">Subraya o selecciona esta oración con tu cursor y mira qué sucede en la consola del navegador.</div>
-          <div class="state" id="select-status" role="status" aria-live="polite">Todavía no has seleccionado texto aquí.</div>
+          <div class="lab-number">02 / Mouseup event + selection</div><h3 id="select-title">The text that gives you away</h3>
+          <p>Use your mouse to select part of the sentence below. Open the console with <b>F12 → Console</b> to see the message.</p>
+          <div class="challenge" id="select-source">Underline or select this sentence with your cursor and see what happens in the browser console.</div>
+          <div class="state" id="select-status" role="status" aria-live="polite">You have not selected any text here yet.</div>
           <pre><code>selectSource.addEventListener('mouseup', () => {
   if (window.getSelection().toString().trim()) {
-    console.log('Hey, I now you just selected the text');
+    console.log('Hey, I know you just selected the text');
   }
 });</code></pre>
-          <div class="console-tip">El evento <code>mouseup</code> ocurre al soltar el botón del mouse. <code>getSelection()</code> comprueba que realmente hayas seleccionado texto. También se contempla la selección con teclado.</div>
+          <div class="console-tip">The <code>mouseup</code> event occurs when you release the mouse button. <code>getSelection()</code> checks that you actually selected text. Keyboard selection is also supported.</div>
         </section>
       </div>
     </section>
-    <section class="summary"><div class="eyebrow">Para pensar</div><h2 class="section-head">¿Qué aprendimos?</h2><ol><li>Un callback es una función que otra parte del programa ejecuta cuando corresponde.</li><li><code>addEventListener()</code> conecta un evento con una función.</li><li>El callback puede consultar el evento y, en ocasiones, modificar el comportamiento normal del navegador.</li></ol><p><b>Reto:</b> cambia el mensaje de la consola y agrega un contador de selecciones. ¿Dónde guardarías el número?</p></section>
+    <section class="summary"><div class="eyebrow">Food for thought</div><h2 class="section-head">What did we learn?</h2><ol><li>A callback is a function that another part of the program runs when appropriate.</li><li><code>addEventListener()</code> connects an event to a function.</li><li>The callback can inspect the event and sometimes change the browser's normal behavior.</li></ol><p><b>Challenge:</b> change the console message and add a selection counter. Where would you store the number?</p></section>
   </main>
-  <footer>AULA/CÓDIGO · EDUCACIÓN TECNOLÓGICA · HTML5 + CSS + JAVASCRIPT EN UN SOLO ARCHIVO</footer>
+  <footer>CODE/CLASS · TECHNOLOGY EDUCATION · HTML5 + CSS + JAVASCRIPT IN A SINGLE FILE</footer>
   <script>
     'use strict';
     const copySource = document.querySelector('#copy-source');
@@ -131,15 +131,15 @@ boton.addEventListener('click', function () {
     const replacement = 'See what I mean?, you copied this text instead of the original text';
 
     document.querySelector('#saludar').addEventListener('click', function () {
-      alert('¡Hola, clase! Acabas de ejecutar un callback.');
+      alert('Hello, class! You just ran a callback.');
     });
 
     copySource.addEventListener('copy', function (event) {
       event.preventDefault();
       event.clipboardData.setData('text/plain', replacement);
-      copyStatus.textContent = '¡Callback ejecutado! Ahora pega el texto para descubrir el cambio.';
+      copyStatus.textContent = 'Callback executed! Now paste the text to discover the change.';
       copyStatus.dataset.active = 'true';
-      console.log('Evento copy: el texto del portapapeles fue sustituido.');
+      console.log('Copy event: the clipboard text was replaced.');
     });
 
     function reportSelection() {
@@ -147,8 +147,8 @@ boton.addEventListener('click', function () {
       if (!selection || !selection.toString().trim()) return;
       const range = selection.getRangeAt(0);
       if (!selectSource.contains(range.commonAncestorContainer)) return;
-      console.log('Hey, I now you just selected the text');
-      selectStatus.textContent = '¡Texto seleccionado! Revisa la consola del navegador (F12).';
+      console.log('Hey, I know you just selected the text');
+      selectStatus.textContent = 'Text selected! Check the browser console (F12).';
       selectStatus.dataset.active = 'true';
     }
 
