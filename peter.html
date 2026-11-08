@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Answers - Interactive Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mystic: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        mystic: {
+                            900: '#f8fafd',
+                            800: '#ffffff',
+                            700: '#f1f3f4',
+                            600: '#e8eaed',
+                            accent: '#1a73e8',
+                            gold: '#8ab4f8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background: #f8fafd;
+            color: #202124;
+        }
+
+        main {
+            border-color: #e3e6eb !important;
+            box-shadow: 0 8px 30px rgba(60, 64, 67, 0.12) !important;
+        }
+
+        [class*="bg-mystic-900"] { background-color: #f8fafd !important; }
+        [class*="bg-mystic-800"] { background-color: #ffffff !important; }
+        [class*="bg-mystic-700"] { background-color: #f1f3f4 !important; }
+        [class*="text-purple"] { color: #5f6368 !important; }
+        [class*="text-amber"] { color: #1a73e8 !important; }
+        [class*="text-slate-100"], [class*="text-slate-200"] { color: #202124 !important; }
+        [class*="border-purple"] { border-color: #dfe1e5 !important; }
+        input {
+            background: #ffffff !important;
+            color: #202124 !important;
+            border-color: #dadce0 !important;
+        }
+        input:focus {
+            border-color: #1a73e8 !important;
+            box-shadow: 0 0 0 1px #1a73e8 !important;
+        }
+        .gemini-gradient {
+            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
+        }
+        .mystic-card {
+            animation: none;
+        }
+
+        /* Custom scrollbar for chat body */
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 12, 27, 0.5);
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 3px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.6);
+        }
+
+        /* Pulse glow animation for mystical aura */
+        @keyframes aura-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+            50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.5); }
+        }
+        /* Typing dots animation */
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-mystic-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
+
+    <!-- Header & Teacher Controls -->
+    <header class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-3 px-2">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full gemini-gradient flex items-center justify-center shadow-lg text-lg text-white">
+                ✦
+            </div>
+            <div>
+                <h1 class="font-mystic font-bold text-xl sm:text-2xl text-amber-300 tracking-wider">Peter Answers</h1>
+                <p class="text-xs text-purple-300">A playful JavaScript guessing game — not an AI</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">For a Tecmilenio high school class</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+            <!-- Debug / Teacher Mode Toggle -->
+            <button id="toggle-debug-btn" onclick="toggleDebugMode()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-mystic-700 hover:bg-mystic-600 border border-purple-500/30 text-purple-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-code text-amber-400"></i>
+                <span id="debug-btn-text">Teacher Mode: OFF</span>
+            </button>
+            
+            <!-- Instructions Modal Toggle -->
+            <button onclick="toggleModal('info-modal')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-mystic-700 hover:bg-mystic-600 border border-purple-500/30 text-purple-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-question text-purple-400"></i>
+                <span>How does it work?</span>
+            </button>
+
+            <!-- Reset Chat -->
+            <button onclick="clearChat()" class="p-1.5 text-xs rounded-lg bg-mystic-700 hover:bg-red-900/50 border border-purple-500/30 text-slate-300 transition" title="Reset game">
+                <i class="fa-solid fa-rotate-right p-1"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Teacher Live Debugger Panel (Hidden by Default) -->
+    <div id="debug-panel" class="w-full max-w-4xl mb-3 bg-purple-950/80 border border-amber-500/40 rounded-xl p-3 text-xs font-mono hidden transition-all">
+        <div class="flex items-center justify-between mb-2 pb-1 border-b border-purple-800">
+            <span class="text-amber-400 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-bug"></i> Teacher Panel (live JavaScript memory inspection)
+            </span>
+            <span id="debug-status" class="px-2 py-0.5 rounded text-[10px] bg-gray-800 text-gray-400">Secret Mode: INACTIVE</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="bg-mystic-900/80 p-2 rounded border border-purple-900">
+                <span class="text-gray-400 block text-[10px]">Displayed prompt:</span>
+                <span id="debug-display-text" class="text-purple-200 font-sans italic truncate block">(empty)</span>
+            </div>
+            <div class="bg-mystic-900/80 p-2 rounded border border-amber-900/50">
+                <span class="text-amber-400 block text-[10px]">Stored secret answer (`secretAnswer`):</span>
+                <span id="debug-secret-text" class="text-amber-300 font-bold font-sans block truncate">(none)</span>
+            </div>
+            <div class="bg-mystic-900/80 p-2 rounded border border-purple-900">
+                <span class="text-gray-400 block text-[10px]">Current question:</span>
+                <span id="debug-question-text" class="text-purple-200 font-sans truncate block">(empty)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <main class="w-full max-w-4xl bg-mystic-800/90 border border-purple-500/20 rounded-2xl shadow-2xl flex flex-col h-[75vh] min-h-[500px] overflow-hidden mystic-card backdrop-blur-md">
+        
+        <!-- Chat Header Bar -->
+        <div class="bg-mystic-900/90 px-4 py-3 border-b border-purple-500/20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-indigo-900 border border-purple-400/30 flex items-center justify-center text-sm shadow">
+                        ✦
+                    </div>
+                    <span class="w-2.5 h-2.5 bg-emerald-500 border-2 border-mystic-900 rounded-full absolute bottom-0 right-0"></span>
+                </div>
+                <div>
+                    <h2 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                        Peter Answers
+                        <span class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-purple-900/60 text-purple-300 border border-purple-500/30">Ready</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-400">A game</p>
+                </div>
+            </div>
+            <div class="text-xs text-purple-300/60 font-mono hidden sm:block">
+                JS EventListener Demo
+            </div>
+        </div>
+
+        <!-- Messages Body -->
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 chat-scroll bg-gradient-to-b from-mystic-900/40 to-mystic-800/60">
+            
+            <!-- Initial greeting -->
+            <div class="flex items-start gap-3 max-w-[85%]">
+                <div class="w-8 h-8 rounded-full bg-purple-900/80 border border-purple-400/30 flex items-center justify-center text-xs flex-shrink-0 mt-1">
+                    ✦
+                </div>
+                <div class="bg-mystic-700/90 border border-purple-500/20 rounded-2xl rounded-tl-none p-3.5 shadow-md">
+                    <p class="text-xs font-semibold text-amber-300 mb-1">Peter Answers</p>
+                    <p class="text-sm text-slate-200 leading-relaxed">
+                        Hi! I am Peter Answers, a simple interactive game — not an AI and not real magic. Type a prompt, ask a question, and reveal the answer.
+                    </p>
+                    <span class="text-[10px] text-purple-300/50 mt-2 block text-right">Game ready</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chat Input Form Area -->
+        <form id="oracle-form" onsubmit="handleFormSubmit(event)" class="bg-mystic-900/95 p-3 sm:p-4 border-t border-purple-500/20 space-y-2.5">
+            
+            <!-- Input 1: Prompt -->
+            <div class="relative">
+                <label for="petition-input" class="block text-[11px] font-medium text-purple-300 mb-1 flex items-center justify-between">
+                    <span>1. Game prompt:</span>
+                    <span id="petition-hint" class="text-[10px] text-slate-400 italic font-normal">Tip: press . to enter a hidden answer</span>
+                </label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-3 text-purple-400 text-xs">
+                        <i class="fa-solid fa-scroll"></i>
+                    </span>
+                    <input 
+                        type="text" 
+                        id="petition-input"
+                        autocomplete="off"
+                        placeholder="Type a prompt or use the hidden-answer trick"
+                        class="w-full bg-mystic-800/90 text-slate-100 placeholder-slate-500 text-sm rounded-xl pl-9 pr-8 py-2.5 border border-purple-500/30 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
+                    >
+                    <!-- Status indicator for secret mode -->
+                    <span id="secret-indicator" class="absolute right-3 text-xs text-amber-400 hidden" title="Secret mode active">
+                        <i class="fa-solid fa-magic-wand-sparkles animate-pulse"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Input 2: Question & Send Button -->
+            <div>
+                <label for="question-input" class="block text-[11px] font-medium text-purple-300 mb-1">
+                    2. Your question:
+                </label>
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute left-3 text-purple-400 text-xs top-3">
+                            <i class="fa-solid fa-circle-question"></i>
+                        </span>
+                        <input 
+                            type="text" 
+                            id="question-input"
+                            autocomplete="off"
+                            placeholder="Example: What color is my shirt?"
+                            class="w-full bg-mystic-800/90 text-slate-100 placeholder-slate-500 text-sm rounded-xl pl-9 pr-3 py-2.5 border border-purple-500/30 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
+                        >
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        class="gemini-gradient hover:opacity-90 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition duration-200 shadow-lg flex items-center gap-2 border border-purple-400/30 flex-shrink-0"
+                    >
+                        <span>Ask Peter</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </main>
+
+    <!-- Modal: Educational Explanation for Students & Teachers -->
+    <div id="info-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-mystic-800 border border-purple-500/40 rounded-2xl max-w-lg w-full p-5 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            
+            <button onclick="toggleModal('info-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-purple-500/20 pb-3">
+                <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 text-lg">
+                    💡
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-amber-300">How the Peter Answers game works</h3>
+                    <p class="text-xs text-purple-300">A JavaScript activity for a Tecmilenio high school class</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                <p>
+                    This is a playful version of the classic Peter Answers / Peter Answers game. It does not use artificial intelligence: it is a keyboard-event trick built with JavaScript for classroom learning.
+                </p>
+
+                <div class="bg-mystic-900 p-3 rounded-xl border border-purple-900 space-y-2">
+                    <h4 class="font-bold text-purple-300 text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-key text-amber-400"></i> How to play
+                    </h4>
+                    <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+                        <li>In <strong>1. Game prompt</strong>, press the period key (<code class="bg-purple-950 px-1 py-0.5 rounded text-amber-300 border border-purple-800">.</code>).</li>
+                        <li>Type the <strong>hidden answer</strong> you want the game to reveal (for example, <em class="text-amber-200">Blue</em>).</li>
+                        <li>Your typing is replaced on screen by a decoy phrase: <em class="text-purple-300">"Peter, please answer this question:"</em>.</li>
+                        <li>Press period again to end secret mode, then finish the prompt normally.</li>
+                        <li>Type a question in the second field and click <strong>Ask Peter</strong>. The game reveals your hidden answer.</li>
+                    </ol>
+                </div>
+
+                <div class="bg-mystic-900 p-3 rounded-xl border border-purple-900 space-y-2">
+                    <h4 class="font-bold text-purple-300 text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-code text-indigo-400"></i> JavaScript concepts in the code
+                    </h4>
+                    <ul class="list-disc list-inside space-y-1 text-slate-300">
+                        <li><strong class="text-purple-200">`keydown` event listener:</strong> Captures each key before it appears in the input.</li>
+                        <li><strong class="text-purple-200">`e.preventDefault()`:</strong> Cancels the key's default action.</li>
+                        <li><strong class="text-purple-200">Memory variables:</strong> Stores the real answer in <code class="text-amber-300">secretAnswer</code> while displaying decoy text.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="toggleModal('info-modal')" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition">
+                    Got it, back to the game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // ==========================================
+        // CONSTANTS & STATE VARIABLES
+        // ==========================================
+        const DISGUISE_TEXT = "Peter, please answer this question:";
+        
+        let isSecretMode = false;
+        let secretAnswer = "";
+        let disguiseIndex = 0;
+        let isTeacherDebugMode = false;
+
+        // Fallback mystical responses when NO secret trick was entered
+        const FALLBACK_RESPONSES = [
+            "The game cannot reveal an answer without a hidden answer.",
+            "Try again and enter a secret answer first.",
+            "This playful game needs a complete prompt before it can respond.",
+            "No hidden answer was entered this time.",
+            "The question is ready, but the game has no answer to reveal.",
+            "Use the period key trick to create a secret answer."
+        ];
+
+        // DOM Elements
+        const petitionInput = document.getElementById('petition-input');
+        const questionInput = document.getElementById('question-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const secretIndicator = document.getElementById('secret-indicator');
+
+        // Debug DOM Elements
+        const debugPanel = document.getElementById('debug-panel');
+        const debugStatus = document.getElementById('debug-status');
+        const debugDisplayText = document.getElementById('debug-display-text');
+        const debugSecretText = document.getElementById('debug-secret-text');
+        const debugQuestionText = document.getElementById('debug-question-text');
+        const debugBtnText = document.getElementById('debug-btn-text');
+
+        // ==========================================
+        // KEYBOARD INTERCEPTOR TRICK MECHANISM
+        // ==========================================
+        petitionInput.addEventListener('keydown', function(e) {
+            
+            // 1. Check for the magic period (.) key to toggle Secret Mode
+            if (e.key === '.') {
+                e.preventDefault(); // Don't print the actual dot into the input directly
+                
+                isSecretMode = !isSecretMode;
+                
+                // Toggle secret visual indicator dot
+                if (isSecretMode) {
+                    secretIndicator.classList.remove('hidden');
+                } else {
+                    secretIndicator.classList.add('hidden');
+                }
+
+                // Advance one character of the disguise text
+                appendDisguiseChar();
+                updateDebugDisplay();
+                return;
+            }
+
+            // 2. Handling keys while IN Secret Mode
+            if (isSecretMode) {
+                
+                // Handle Backspace inside secret mode
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    if (secretAnswer.length > 0) {
+                        secretAnswer = secretAnswer.slice(0, -1);
+                        disguiseIndex = Math.max(0, disguiseIndex - 1);
+                        this.value = DISGUISE_TEXT.slice(0, disguiseIndex);
+                    }
+                    updateDebugDisplay();
+                    return;
+                }
+
+                // Ignore non-printable keys (Shift, Alt, Tab, Arrow keys, etc.)
+                if (e.key.length === 1) {
+                    e.preventDefault(); // Stop normal key typing
+                    
+                    // Store real key in hidden variable
+                    secretAnswer += e.key;
+
+                    // Display the next character of the disguise phrase instead
+                    appendDisguiseChar();
+                    updateDebugDisplay();
+                }
+            } else {
+                // Not in secret mode: keep track of index sync
+                setTimeout(() => {
+                    disguiseIndex = this.value.length;
+                    updateDebugDisplay();
+                }, 0);
+            }
+        });
+
+        // Sync question input to debug panel
+        questionInput.addEventListener('input', function() {
+            if (debugQuestionText) {
+                debugQuestionText.textContent = this.value || "(empty)";
+            }
+        });
+
+        // Append next char from DISGUISE_TEXT to the petition input
+        function appendDisguiseChar() {
+            if (disguiseIndex < DISGUISE_TEXT.length) {
+                petitionInput.value += DISGUISE_TEXT[disguiseIndex];
+                disguiseIndex++;
+            } else {
+                petitionInput.value += " ";
+            }
+        }
+
+        // ==========================================
+        // SUBMIT & CHAT MANAGEMENT
+        // ==========================================
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const petitionText = petitionInput.value.trim();
+            const questionText = questionInput.value.trim();
+
+            if (!questionText) {
+                // Focus question input if empty
+                questionInput.focus();
+                return;
+            }
+
+            // 1. Append User Question to Chat
+            appendMessage('user', questionText, petitionText);
+
+            // 2. Prepare the game's answer
+            let finalAnswer = "";
+            if (secretAnswer.trim().length > 0) {
+                finalAnswer = secretAnswer.trim();
+            } else {
+                // Pick a random fallback response
+                const randomIndex = Math.floor(Math.random() * FALLBACK_RESPONSES.length);
+                finalAnswer = FALLBACK_RESPONSES[randomIndex];
+            }
+
+            // 3. Reset state & inputs immediately so user can't inspect the text boxes
+            const currentSecret = secretAnswer; // Keep local copy for async response
+            resetTrickState();
+
+            // 4. Show Typing Indicator and then output Peter's answer
+            showTypingIndicator();
+
+            setTimeout(() => {
+                removeTypingIndicator();
+                appendMessage('bot', finalAnswer);
+            }, 1200 + Math.random() * 600);
+        }
+
+        // Reset inputs and secret mode
+        function resetTrickState() {
+            isSecretMode = false;
+            secretAnswer = "";
+            disguiseIndex = 0;
+            petitionInput.value = "";
+            questionInput.value = "";
+            secretIndicator.classList.add('hidden');
+            updateDebugDisplay();
+        }
+
+        // Append Message Bubbles
+        function appendMessage(sender, text, subtext = '') {
+            const msgDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                msgDiv.className = 'flex items-end justify-end gap-2 max-w-[85%] ml-auto';
+                msgDiv.innerHTML = `
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl rounded-br-none p-3 shadow-md border border-purple-400/20">
+                        ${subtext ? `<p class="text-[10px] text-purple-200/70 border-b border-purple-400/20 pb-1 mb-1 italic">Prompt: ${escapeHTML(subtext)}</p>` : ''}
+                        <p class="text-sm leading-relaxed">${escapeHTML(text)}</p>
+                        <span class="text-[9px] text-purple-200/60 mt-1 block text-right">Sent</span>
+                    </div>
+                    <div class="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center text-xs flex-shrink-0 shadow">
+                        👤
+                    </div>
+                `;
+            } else {
+                msgDiv.className = 'flex items-start gap-3 max-w-[85%]';
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-purple-900/80 border border-purple-400/30 flex items-center justify-center text-xs flex-shrink-0 mt-1 shadow">
+                        ✦
+                    </div>
+                    <div class="bg-mystic-700/90 border border-purple-500/20 rounded-2xl rounded-tl-none p-3.5 shadow-md">
+                        <p class="text-xs font-semibold text-amber-300 mb-1">Peter Answers</p>
+                        <p class="text-sm text-slate-100 font-medium leading-relaxed">${escapeHTML(text)}</p>
+                        <span class="text-[10px] text-purple-300/50 mt-1.5 block text-right">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                `;
+            }
+
+            chatMessages.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        // Typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'flex items-start gap-3 max-w-[85%]';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-purple-900/80 border border-purple-400/30 flex items-center justify-center text-xs flex-shrink-0">
+                    ✦
+                </div>
+                <div class="bg-mystic-700/80 border border-purple-500/20 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 typing-dot"></span>
+                    <span class="w-2 h-2 rounded-full bg-purple-400 typing-dot"></span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-400 typing-dot"></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function clearChat() {
+            chatMessages.innerHTML = '';
+            // Re-append initial greeting
+            appendMessage('bot', 'Welcome back. Enter a prompt, ask a question, and let the game reveal your hidden answer.');
+            resetTrickState();
+        }
+
+        // Helper to escape HTML characters
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // ==========================================
+        // TEACHER DEBUG & MODAL CONTROLS
+        // ==========================================
+        function toggleDebugMode() {
+            isTeacherDebugMode = !isTeacherDebugMode;
+            if (isTeacherDebugMode) {
+                debugPanel.classList.remove('hidden');
+                debugBtnText.textContent = "Teacher Mode: ON";
+            } else {
+                debugPanel.classList.add('hidden');
+                debugBtnText.textContent = "Teacher Mode: OFF";
+            }
+            updateDebugDisplay();
+        }
+
+        function updateDebugDisplay() {
+            if (!debugPanel) return;
+
+            if (isSecretMode) {
+                debugStatus.textContent = "Secret Mode: ACTIVE (capturing keyboard)";
+                debugStatus.className = "px-2 py-0.5 rounded text-[10px] bg-amber-500 text-black font-bold animate-pulse";
+            } else {
+                debugStatus.textContent = "Secret Mode: INACTIVE";
+                debugStatus.className = "px-2 py-0.5 rounded text-[10px] bg-gray-800 text-gray-400";
+            }
+
+            debugDisplayText.textContent = petitionInput.value || "(empty)";
+            debugSecretText.textContent = secretAnswer ? `"${secretAnswer}"` : "(none)";
+            debugQuestionText.textContent = questionInput.value || "(empty)";
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
