@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tecmilenio Pong Game</title>
+    
+    <!-- Tecmilenio Brand Typography (Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <!-- CSS STYLES (Tecmilenio Theme: Dark Green #00563B & Accent Green #00A859) -->
+    <style>
+        /* 1. Reset and font setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* 2. Full screen center layout */
+        body {
+            background-color: #f4f6f8;
+            color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 3. Header title styling */
+        h1 {
+            color: #00563B; /* Tecmilenio Main Dark Green */
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #00A859; /* Tecmilenio Accent Green */
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* 4. Canvas Styling */
+        canvas {
+            background-color: #003B2B; /* Deep Forest Green pitch */
+            border: 4px solid #00563B;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 86, 59, 0.2);
+            display: block;
+        }
+
+        /* 5. Simple Instruction Text */
+        .controls-hint {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #555555;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HTML STRUCTURE -->
+    <h1>Tecmilenio High School</h1>
+    <p>Lets play pong</p>
+
+    <!-- The Canvas Element where JavaScript draws the game -->
+    <canvas id="pongCanvas" width="600" height="400"></canvas>
+
+    <div class="controls-hint">
+        Player 1 (Left): <b>W / S</b> | Player 2 (Right): <b>Up / Down Arrows</b> (or Move Mouse)
+    </div>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        // ==========================================
+        // 1. CANVAS SETUP
+        // ==========================================
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d"); // 2D rendering engine
+
+        // ==========================================
+        // 2. GAME OBJECTS & VARIABLES
+        // ==========================================
+        
+        // Left Paddle (Player 1)
+        const player1 = {
+            x: 10,
+            y: canvas.height / 2 - 40,
+            width: 10,
+            height: 80,
+            color: "#FFFFFF",
+            score: 0,
+            dy: 0 // Vertical speed
+        };
+
+        // Right Paddle (Player 2 / AI / Keyboard)
+        const player2 = {
+            x: canvas.width - 20,
+            y: canvas.height / 2 - 40,
+            width: 10,
+            height: 80,
+            color: "#00A859", // Tecmilenio Green
+            score: 0,
+            dy: 0
+        };
+
+        // Ball Object
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 8,
+            speed: 4,
+            dx: 4, // Horizontal direction speed
+            dy: 4, // Vertical direction speed
+            color: "#FFFFFF"
+        };
+
+        // ==========================================
+        // 3. KEYBOARD / MOUSE CONTROLS
+        // ==========================================
+        
+        // Listen for key presses
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "w" || e.key === "W") player1.dy = -6;
+            if (e.key === "s" || e.key === "S") player1.dy = 6;
+
+            if (e.key === "ArrowUp") player2.dy = -6;
+            if (e.key === "ArrowDown") player2.dy = 6;
+        });
+
+        // Stop moving when key is released
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "w" || e.key === "W" || e.key === "s" || e.key === "S") player1.dy = 0;
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") player2.dy = 0;
+        });
+
+        // Mouse control for Player 2 (optional alternative)
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            player2.y = e.clientY - rect.top - player2.height / 2;
+        });
+
+        // ==========================================
+        // 4. GAME UPDATE LOGIC (Physics & Collisions)
+        // ==========================================
+        function update() {
+            // Move Paddles
+            player1.y += player1.dy;
+            player2.y += player2.dy;
+
+            // Keep Paddles inside canvas boundaries
+            player1.y = Math.max(0, Math.min(canvas.height - player1.height, player1.y));
+            player2.y = Math.max(0, Math.min(canvas.height - player2.height, player2.y));
+
+            // Move Ball
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Top and Bottom Wall Collisions (Bounce)
+            if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) {
+                ball.dy *= -1; // Reverse vertical direction
+            }
+
+            // Paddle Collisions
+            let paddle = (ball.x < canvas.width / 2) ? player1 : player2;
+
+            if (checkCollision(ball, paddle)) {
+                ball.dx *= -1; // Reverse horizontal direction
+                
+                // Accelerate slightly on hit for fun dynamics
+                ball.dx *= 1.05;
+            }
+
+            // Scoring System (Ball missed paddle)
+            if (ball.x - ball.radius <= 0) {
+                player2.score++;
+                resetBall();
+            } else if (ball.x + ball.radius >= canvas.width) {
+                player1.score++;
+                resetBall();
+            }
+        }
+
+        // Collision Helper Function (AABB Rectangle vs Circle)
+        function checkCollision(b, p) {
+            return b.x - b.radius < p.x + p.width &&
+                   b.x + b.radius > p.x &&
+                   b.y - b.radius < p.y + p.height &&
+                   b.y + b.radius > p.y;
+        }
+
+        // Reset Ball to Center
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speed = 4;
+            ball.dx = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+            ball.dy = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+        }
+
+        // ==========================================
+        // 5. DRAWING EVERYTHING ON CANVAS
+        // ==========================================
+        function render() {
+            // Clear entire canvas frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Dashed Net Line in Middle
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw Player 1 Paddle
+            ctx.fillStyle = player1.color;
+            ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
+
+            // Draw Player 2 Paddle
+            ctx.fillStyle = player2.color;
+            ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
+
+            // Draw Ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+
+            // Draw Scores
+            ctx.font = "bold 32px Montserrat";
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillText(player1.score, canvas.width / 4, 40);
+            ctx.fillText(player2.score, (3 * canvas.width) / 4, 40);
+        }
+
+        // ==========================================
+        // 6. MAIN GAME LOOP
+        // ==========================================
+        function gameLoop() {
+            update();  // 1. Calculate next position
+            render();  // 2. Draw elements
+            requestAnimationFrame(gameLoop); // 3. Loop continuously (~60 FPS)
+        }
+
+        // Start the game!
+        gameLoop();
+    </script>
+</body>
+</html>
