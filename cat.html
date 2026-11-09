@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Cat Walking Animation</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #ffffff;
+            color: #222222;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            border: 2px solid #222222;
+            image-rendering: pixelated; /* Keeps pixel art crisp */
+        }
+
+        .controls {
+            margin-top: 15px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="600" height="300"></canvas>
+    <div class="controls">Press <b>A</b> to walk left | Press <b>D</b> to walk right</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Load one image per animation frame.
+        const loadFrame = (source) => new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error(`Unable to load ${source}`));
+            image.src = source;
+        });
+        let catFrames = [];
+        const catFramesPromise = Promise.all(
+            [
+                "cat_sprites/frame_1.png",
+                "cat_sprites/frame_2.png",
+                "cat_sprites/frame_3.png",
+                "cat_sprites/frame_4.png",
+                "cat_sprites/frame_5.png"
+            ].map(loadFrame)
+        );
+
+        // Sprite Configuration
+        const CAT_HEIGHT = 150;
+        const CAT_WIDTH = 56.25;
+        const ANIMATION_FPS = 3; 
+        const FRAME_INTERVAL = 1000 / ANIMATION_FPS; // ~333.33 ms per frame
+
+        // Character State
+        const cat = {
+            x: (canvas.width - CAT_WIDTH) / 2,
+            y: (canvas.height - CAT_HEIGHT) / 2,
+            speed: 2,
+            currentFrame: 0,
+            facingLeft: false,
+            isMoving: false
+        };
+
+        // Keyboard State Tracking
+        const keys = {
+            a: false,
+            d: false
+        };
+
+        window.addEventListener("keydown", (e) => {
+            const key = e.key.toLowerCase();
+            if (key === "a" || key === "d") keys[key] = true;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            const key = e.key.toLowerCase();
+            if (key === "a" || key === "d") keys[key] = false;
+        });
+
+        let lastFrameTime = 0;
+
+        function update(timestamp) {
+            // Movement logic & direction determination
+            if (keys.a && !keys.d) {
+                cat.x -= cat.speed;
+                cat.facingLeft = true;
+                cat.isMoving = true;
+            } else if (keys.d && !keys.a) {
+                cat.x += cat.speed;
+                cat.facingLeft = false;
+                cat.isMoving = true;
+            } else {
+                cat.isMoving = false;
+                cat.facingLeft = false; // Always faces right when idle
+            }
+
+            // Boundary constraints
+            cat.x = Math.max(0, Math.min(canvas.width - CAT_WIDTH, cat.x));
+
+            // Animation frame timing (3 FPS while walking, Frame 0 while idle)
+            if (cat.isMoving) {
+                if (timestamp - lastFrameTime >= FRAME_INTERVAL) {
+                    cat.currentFrame = (cat.currentFrame + 1) % catFrames.length;
+                    lastFrameTime = timestamp;
+                }
+            } else {
+                cat.currentFrame = 0;
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+
+            if (cat.facingLeft) {
+                // Flip horizontally across the character's bounding box
+                ctx.translate(cat.x + CAT_WIDTH, cat.y);
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    catFrames[cat.currentFrame],
+                    0, 0, CAT_WIDTH, CAT_HEIGHT
+                );
+            } else {
+                // Normal right-facing draw
+                ctx.drawImage(
+                    catFrames[cat.currentFrame],
+                    cat.x, cat.y, CAT_WIDTH, CAT_HEIGHT
+                );
+            }
+
+            ctx.restore();
+        }
+
+        function gameLoop(timestamp) {
+            update(timestamp);
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop after all animation frames load.
+        catFramesPromise.then((frames) => {
+            catFrames = frames;
+            requestAnimationFrame(gameLoop);
+        }).catch((error) => {
+            console.error("Cat animation could not be loaded:", error);
+        });
+    </script>
+</body>
+</html>
