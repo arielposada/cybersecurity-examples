@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Cat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --page: #0e0f1f;
+            --panel: #17182e;
+            --cyan: #00e6ff;
+            --magenta: #ff3cc8;
+            --text: #e8ecff;
+            --muted: #8a90b8;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--page);
+            color: var(--text);
+            font-family: "Press Start 2P", "Courier New", monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .stage { width: min(1100px, 100%); }
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .stat {
+            background: var(--panel);
+            border: 2px solid var(--cyan);
+            box-shadow: 0 0 12px rgba(0, 230, 255, 0.35);
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+        }
+        .stat.score { border-color: var(--magenta); box-shadow: 0 0 12px rgba(255, 60, 200, 0.35); }
+        .stat span { color: var(--muted); margin-right: 10px; }
+        .frame {
+            border: 2px solid #2a2d55;
+            box-shadow: 0 0 0 4px #15162b, 0 0 30px rgba(140, 60, 255, 0.25);
+            line-height: 0;
+        }
+        canvas { width: 100%; height: auto; display: block; cursor: crosshair; }
+        canvas.over-cat { cursor: pointer; }
+        .hint {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 0.7rem;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="stage">
+        <div class="hud">
+            <div class="stat"><span>Time</span><b id="timer">00:00:00</b></div>
+            <div class="stat score"><span>Score</span><b id="score">0</b></div>
+        </div>
+        <div class="frame">
+            <canvas id="game" width="1280" height="720"></canvas>
+        </div>
+        <p class="hint">The cat sneaks out from its hiding spots. Click it before it goes back.</p>
+    </div>
+
+    <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const timerEl = document.getElementById("timer");
+    const scoreEl = document.getElementById("score");
+
+    // ---------------- Images ----------------------------------------------
+    const IMAGE_FILES = {
+        room: "images/room.png",              // the full room
+        front: "images/room_front.png",       // objects the cat hides behind
+        frames: [1, 2, 3, 4, 5].map(n => `images/cat/frame_${n}.png`)
+    };
+    const loadImage = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Unable to load ${src}`));
+        img.src = src;
+    });
+
+    // The cat sits between y=118 and y=370 inside each 166x374 frame.
+    const SRC = { x: 0, y: 118, w: 166, h: 252 };
+    const BODY_CENTER = 95 / 166;     // body centre as a fraction of the frame width
+
+    // ---------------- Hiding spots ----------------------------------------
+    // x, y: where the cat's feet start (hidden behind something)
+    // dir: 1 = walks right, -1 = walks left; dist: how far it walks out
+    // size: cat height in pixels (smaller = farther away)
+    const SPOTS = [
+        { name: "left curtain (window sill)",  x: 90,   y: 338, dir: 1,  dist: 80,  size: 44 },
+        { name: "right curtain (window sill)", x: 335,  y: 338, dir: -1, dist: 80,  size: 44 },
+        { name: "left curtain (floor)",        x: 85,   y: 636, dir: 1,  dist: 120, size: 62 },
+        { name: "right curtain (floor)",       x: 340,  y: 636, dir: -1, dist: 90,  size: 62 },
+        { name: "behind the speaker",          x: 459,  y: 430, dir: 1,  dist: 60,  size: 44 },
+        { name: "behind the PC",               x: 841,  y: 644, dir: -1, dist: 110, size: 58 },
+        { name: "behind the bed",              x: 1040, y: 664, dir: -1, dist: 120, size: 66 },
+        { name: "behind the pillow",           x: 1195, y: 495, dir: -1, dist: 70,  size: 44 }
+    ];
+
+    const STAND_TIME = 2;               // seconds the cat stands still
+    const WAIT_MIN = 5, WAIT_MAX = 10;  // seconds between appearances
+    const FIRST_WAIT = 3;
+    const WALK_FPS = 7;
+
+    // ---------------- State -----------------------------------------------
+    let images = null;
+    let score = 0;
+    let startTime = 0;
+    let cat = null;                    // the active cat, or null while waiting
+    let nextSpawnAt = 0;               // seconds since start
+    let lastSpotIndex = -1;
+    const effects = [];                // "+1" pops and sparkles
+
+    function now() { return (performance.now() - startTime) / 1000; }
+    const rand = (a, b) => a + Math.random() * (b - a);
+
+    function spawnCat() {
+        let index;
+        do { index = Math.floor(Math.random() * SPOTS.length); } while (index === lastSpotIndex && SPOTS.length > 1);
+        lastSpotIndex = index;
+        const spot = SPOTS[index];
+        cat = {
+            spot,
+            x: spot.x,
+            phase: "out",          // out -> stand -> back
+            phaseTime: 0,
+            walkTimer: 0,
+            frame: 0,
+            speed: spot.size * 0.75   // px per second, scaled with distance
+        };
+    }
+
+    function catGone() {
+        cat = null;
+        nextSpawnAt = now() + rand(WAIT_MIN, WAIT_MAX);
+    }
+
+    // ---------------- Update ----------------------------------------------
+    function update(dt) {
+        const t = now();
+        if (!cat && t >= nextSpawnAt) spawnCat();
+
+        if (cat) {
+            const s = cat.spot;
+            cat.phaseTime += dt;
+            if (cat.phase === "out") {
+                cat.x += s.dir * cat.speed * dt;
+                if (Math.abs(cat.x - s.x) >= s.dist) {
+                    cat.x = s.x + s.dir * s.dist;
+                    cat.phase = "stand"; cat.phaseTime = 0; cat.frame = 0;
+                }
+            } else if (cat.phase === "stand") {
+                if (cat.phaseTime >= STAND_TIME) { cat.phase = "back"; cat.phaseTime = 0; }
+            } else if (cat.phase === "back") {
+                cat.x -= s.dir * cat.speed * dt;
+                if ((s.dir > 0 && cat.x <= s.x) || (s.dir < 0 && cat.x >= s.x)) catGone();
+            }
+            if (cat && cat.phase !== "stand") {
+                cat.walkTimer += dt;
+                if (cat.walkTimer >= 1 / WALK_FPS) {
+                    cat.walkTimer -= 1 / WALK_FPS;
+                    cat.frame = (cat.frame + 1) % images.frames.length;
+                }
+            }
+        }
+
+        for (let i = effects.length - 1; i >= 0; i--) {
+            effects[i].age += dt;
+            if (effects[i].age > effects[i].life) effects.splice(i, 1);
+        }
+    }
+
+    // ---------------- Cat geometry + clicks --------------------------------
+    function catBox() {
+        if (!cat) return null;
+        const h = cat.spot.size, w = h * SRC.w / SRC.h;
+        const facingRight = cat.phase === "back" ? cat.spot.dir < 0 : cat.spot.dir > 0;
+        const left = facingRight ? cat.x - w * BODY_CENTER : cat.x - w * (1 - BODY_CENTER);
+        return { x: left, y: cat.spot.y - h, w, h, facingRight };
+    }
+
+    function toCanvas(e) {
+        const r = canvas.getBoundingClientRect();
+        return { x: (e.clientX - r.left) * canvas.width / r.width, y: (e.clientY - r.top) * canvas.height / r.height };
+    }
+    function hitsCat(p) {
+        const b = catBox();
+        if (!b) return false;
+        const pad = 6;  // a little forgiving, the cat is small
+        return p.x >= b.x - pad && p.x <= b.x + b.w + pad && p.y >= b.y - pad && p.y <= b.y + b.h + pad;
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+        const p = toCanvas(e);
+        if (hitsCat(p)) {
+            const b = catBox();
+            score++;
+            scoreEl.textContent = score;
+            effects.push({ kind: "plus", x: b.x + b.w / 2, y: b.y, age: 0, life: 0.9 });
+            for (let i = 0; i < 10; i++) {
+                const a = (i / 10) * Math.PI * 2;
+                effects.push({ kind: "spark", x: b.x + b.w / 2, y: b.y + b.h / 2, vx: Math.cos(a), vy: Math.sin(a), age: 0, life: 0.5 });
+            }
+            catGone();
+        }
+    });
+    canvas.addEventListener("pointermove", (e) => {
+        canvas.classList.toggle("over-cat", hitsCat(toCanvas(e)));
+    });
+
+    // ---------------- Render ----------------------------------------------
+    function render() {
+        ctx.drawImage(images.room, 0, 0);
+
+        if (cat) {
+            const b = catBox();
+            const img = images.frames[cat.frame];
+            ctx.save();
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            if (b.facingRight) {
+                ctx.drawImage(img, SRC.x, SRC.y, SRC.w, SRC.h, b.x, b.y, b.w, b.h);
+            } else {
+                ctx.translate(b.x + b.w, b.y);
+                ctx.scale(-1, 1);
+                ctx.drawImage(img, SRC.x, SRC.y, SRC.w, SRC.h, 0, 0, b.w, b.h);
+            }
+            ctx.restore();
+        }
+
+        // things in front of the cat (curtains, bed, PC, speaker, pillow)
+        ctx.drawImage(images.front, 0, 0);
+
+        for (const fx of effects) {
+            const t = fx.age / fx.life;
+            ctx.save();
+            ctx.globalAlpha = 1 - t;
+            if (fx.kind === "plus") {
+                ctx.font = `24px "Press Start 2P", "Courier New", monospace`;
+                ctx.textAlign = "center";
+                ctx.lineWidth = 5; ctx.strokeStyle = "#0e0f1f";
+                ctx.fillStyle = "#7dff9b";
+                const y = fx.y - 10 - t * 40;
+                ctx.strokeText("+1", fx.x, y); ctx.fillText("+1", fx.x, y);
+            } else {
+                const d = 8 + t * 34;
+                ctx.fillStyle = "#ffe066";
+                ctx.fillRect(fx.x + fx.vx * d - 3, fx.y + fx.vy * d - 3, 6, 6);
+            }
+            ctx.restore();
+        }
+    }
+
+    function formatTime(t) {
+        const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = Math.floor(t % 60);
+        return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
+    }
+
+    // ---------------- Loop ------------------------------------------------
+    let last = 0;
+    function loop(ts) {
+        const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0;
+        last = ts;
+        update(dt);
+        render();
+        timerEl.textContent = formatTime(now());
+        requestAnimationFrame(loop);
+    }
+
+    Promise.all([
+        loadImage(IMAGE_FILES.room),
+        loadImage(IMAGE_FILES.front),
+        Promise.all(IMAGE_FILES.frames.map(loadImage))
+    ]).then(([room, front, frames]) => {
+        images = { room, front, frames };
+        startTime = performance.now();
+        nextSpawnAt = FIRST_WAIT;
+        requestAnimationFrame(loop);
+    }).catch((err) => {
+        console.error(err);
+        ctx.fillStyle = "#e8ecff";
+        ctx.font = "18px monospace";
+        ctx.fillText("Images not found. Keep the images folder next to this HTML file.", 40, 60);
+    });
+
+    // for testing
+    window.__catch = { SPOTS, get cat() { return cat; }, spawnAt(i) { lastSpotIndex = -1; const s = SPOTS[i]; cat = { spot: s, x: s.x, phase: "out", phaseTime: 0, walkTimer: 0, frame: 0, speed: s.size * 0.75 }; }, setX(x, phase) { cat.x = x; cat.phase = phase; } };
+    </script>
+</body>
+</html>
