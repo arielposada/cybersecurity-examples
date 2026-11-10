@@ -82,9 +82,9 @@
 
     // ---------------- Images ----------------------------------------------
     const IMAGE_FILES = {
-        room: "images/room.png",              // the full room
-        front: "images/room_front.png",       // objects the cat hides behind
-        frames: [1, 2, 3, 4, 5].map(n => `images/cat/frame_${n}.png`)
+        room: "./images/room.png",              // the full room
+        front: "./images/room_front.png",       // objects the cat hides behind
+        frames: [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`)
     };
     const loadImage = (src) => new Promise((resolve, reject) => {
         const img = new Image();
