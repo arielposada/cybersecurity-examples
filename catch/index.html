@@ -81,15 +81,10 @@
     const scoreEl = document.getElementById("score");
 
     // ---------------- Images ----------------------------------------------
-    const pagePath = window.location.pathname;
-    const pageDirectory = /\/[^/]*\.[^/]+$/.test(pagePath)
-        ? pagePath.replace(/[^/]*$/, "")
-        : `${pagePath.replace(/\/$/, "")}/`;
-    const assetUrl = (path) => new URL(path, `${window.location.origin}${pageDirectory}`).href;
     const IMAGE_FILES = {
-        room: assetUrl("./images/room.png"),              // the full room
-        front: assetUrl("./images/room_front.png"),       // objects the cat hides behind
-        frames: [1, 2, 3, 4, 5].map(n => assetUrl(`./images/cat/frame_${n}.png`))
+        room: "./images/room.png",              // the full room
+        front: "./images/room_front.png",       // objects the cat hides behind
+        frames: [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`)
     };
     const loadImage = (src) => new Promise((resolve, reject) => {
         const img = new Image();
