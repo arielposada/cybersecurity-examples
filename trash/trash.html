@@ -111,11 +111,11 @@
 
     // ---------------- Images (relative paths) -----------------------------
     const IMAGE_FILES = {
-        city: "images/city.png",
-        cansBack: "images/cans_back.png",     // signs + inside of the cans
-        cansFront: "images/cans_front.png",   // can bodies (hide the box as it drops in)
-        box: "images/box.png",
-        frames: [1, 2, 3, 4, 5].map(n => `images/cat/frame_${n}.png`)
+        city: "./images/city.png",
+        cansBack: "./images/cans_back.png",     // signs + inside of the cans
+        cansFront: "./images/cans_front.png",   // can bodies (hide the box as it drops in)
+        box: "./images/box.png",
+        frames: [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`)
     };
     const loadImage = (src) => new Promise((resolve, reject) => {
         const img = new Image();
