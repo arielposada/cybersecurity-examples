@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Sorts the Trash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --page: #1d2550;
+            --ink: #111111;
+            --paper: #fffdf4;
+            --yellow: #ffd23f;
+            --gray: #8f959f;
+            --green: #34a054;
+            --blue: #2468e0;
+            --paper-yellow: #f5b800;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--page);
+            background-image: radial-gradient(rgba(255,255,255,0.08) 1.5px, transparent 1.6px);
+            background-size: 14px 14px;
+            color: var(--paper);
+            font-family: "Bangers", Impact, "Arial Black", sans-serif;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .stage { width: min(960px, 100%); }
+        .hud { display: flex; gap: 14px; padding-bottom: 12px; flex-wrap: wrap; }
+        .tab {
+            background: var(--paper);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0 var(--ink);
+            font-size: 1.7rem;
+            padding: 2px 14px;
+            font-variant-numeric: tabular-nums;
+        }
+        .tab span { font-size: 1.1rem; color: #555; margin-right: 8px; }
+        .tab.score { background: var(--yellow); }
+        .frame {
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0 var(--ink), 0 0 0 3px var(--yellow);
+            line-height: 0;
+        }
+        canvas { width: 100%; height: auto; display: block; }
+        .legend {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: 1.2rem;
+        }
+        .opt {
+            border: 3px solid var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
+            padding: 2px 12px;
+            color: #fff;
+            text-shadow: 1px 1px 0 var(--ink);
+        }
+        .opt b {
+            display: inline-block;
+            background: var(--paper);
+            color: var(--ink);
+            text-shadow: none;
+            border: 2px solid var(--ink);
+            padding: 0 7px;
+            margin-right: 6px;
+        }
+        .o1 { background: var(--gray); }
+        .o2 { background: var(--green); }
+        .o3 { background: var(--blue); }
+        .o4 { background: var(--paper-yellow); }
+        .enter { margin-top: 10px; text-align: center; color: #cfd6ff; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <div class="stage">
+        <div class="hud">
+            <div class="tab"><span>TIME</span><b id="timer">02:00</b></div>
+            <div class="tab score"><span>SCORE</span><b id="score">0</b></div>
+        </div>
+        <div class="frame">
+            <canvas id="game" width="960" height="540"></canvas>
+        </div>
+        <div class="legend">
+            <div class="opt o1"><b>1</b>Inorganic</div>
+            <div class="opt o2"><b>2</b>Organic</div>
+            <div class="opt o3"><b>3</b>Plastic (PET)</div>
+            <div class="opt o4"><b>4</b>Paper</div>
+        </div>
+        <div class="enter">Press Enter to start a new game. Right answer +1, wrong answer &minus;1.</div>
+    </div>
+
+    <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const timerEl = document.getElementById("timer");
+    const scoreEl = document.getElementById("score");
+    const VW = canvas.width, VH = canvas.height;
+    const GROUND = 458;                 // sidewalk line in city.png
+    const FONT = `Bangers, Impact, "Arial Black", sans-serif`;
+
+    // ---------------- Images (relative paths) -----------------------------
+    const IMAGE_FILES = {
+        city: "images/city.png",
+        cansBack: "images/cans_back.png",     // signs + inside of the cans
+        cansFront: "images/cans_front.png",   // can bodies (hide the box as it drops in)
+        box: "images/box.png",
+        frames: [1, 2, 3, 4, 5].map(n => `images/cat/frame_${n}.png`)
+    };
+    const loadImage = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Unable to load ${src}`));
+        img.src = src;
+    });
+
+    // ---------------- Cans ------------------------------------------------
+    const RIM_Y = 290;
+    const CANS = [
+        { key: "1", name: "INORGANIC",    x: 330 },
+        { key: "2", name: "ORGANIC",      x: 490 },
+        { key: "3", name: "PLASTIC (PET)", x: 650 },
+        { key: "4", name: "PAPER",        x: 810 }
+    ];
+
+    // ---------------- What can be in the box --------------------------------
+    // can: 0 inorganic, 1 organic, 2 plastic (PET), 3 paper
+    const ITEMS = [
+        ["a bag of chips", 0], ["a candy wrapper", 0], ["a foam cup", 0], ["a broken plate", 0],
+        ["an old sneaker", 0], ["a burnt light bulb", 0], ["an old toothbrush", 0], ["a dirty sponge", 0],
+        ["a dry pen", 0], ["a used juice pouch", 0],
+        ["a banana peel", 1], ["an apple core", 1], ["eggshells", 1], ["orange peels", 1],
+        ["coffee grounds", 1], ["lettuce leaves", 1], ["leftover rice", 1], ["dry leaves", 1],
+        ["a used tea bag", 1], ["an avocado pit", 1],
+        ["a water bottle", 2], ["a soda bottle", 2], ["a juice bottle", 2], ["a sports drink bottle", 2],
+        ["a clear salad container", 2], ["a cooking oil bottle", 2], ["a clear plastic cup", 2], ["a vinegar bottle", 2],
+        ["an old newspaper", 3], ["a cardboard box", 3], ["a notebook sheet", 3], ["a magazine", 3],
+        ["a paper bag", 3], ["a paper egg carton", 3], ["an envelope", 3], ["a cereal box", 3],
+        ["a flyer", 3], ["a toilet paper tube", 3]
+    ];
+
+    // ---------------- Cat ---------------------------------------------------
+    const SRC = { x: 0, y: 118, w: 166, h: 252 };   // cat area in each frame
+    const CAT_H = 100, CAT_W = SRC.w * CAT_H / SRC.h;
+    const BODY_CENTER = 95 / 166;
+    const CAT_HOME = 150;                           // where the cat stands to throw
+    const CAT_WALK = 420;                           // px per second
+    const BOX_W = 60, BOX_H = 48;
+
+    const GAME_TIME = 120;          // 2 minutes
+    const HINT_AFTER = 4;           // seconds before the cat tells you
+    const HINT_SHOW = 1.6;          // how long the hint stays before the cat throws it itself
+    const NO_SHOW = 0.8;
+
+    // ---------------- State -------------------------------------------------
+    let images;
+    let state = "title";            // title | playing | over
+    let phase;                      // enter | ask | hint | throw | leave
+    let score, timeLeft, bag, item, phaseTime, noTimer, praiseTimer;
+    const cat = { x: -60, facingLeft: false, frame: 0, walkTimer: 0, pose: null };
+    let box = null;                 // { mode: held | flying | dropping, ... }
+
+    function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+        return a;
+    }
+    function nextItem() {
+        if (!bag || bag.length === 0) bag = shuffle(ITEMS.slice());
+        const [label, can] = bag.pop();
+        return { label, can };
+    }
+
+    function newGame() {
+        state = "playing";
+        score = 0; timeLeft = GAME_TIME; bag = null;
+        scoreEl.textContent = "0";
+        startRound();
+    }
+    function startRound() {
+        item = nextItem();
+        cat.x = -60; cat.facingLeft = false; cat.pose = null;
+        box = { mode: "held" };
+        noTimer = 0; praiseTimer = 0;
+        setPhase("enter");
+    }
+    function setPhase(p) { phase = p; phaseTime = 0; }
+
+    // ---------------- Input -------------------------------------------------
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            if (state !== "playing") newGame();
+            return;
+        }
+        const index = ["1", "2", "3", "4"].indexOf(e.key);
+        if (index === -1 || state !== "playing" || phase !== "ask") return;
+        e.preventDefault();
+        if (index === item.can) {
+            changeScore(+1);
+            praiseTimer = 1.0;
+            throwTo(index);
+        } else {
+            changeScore(-1);
+            noTimer = NO_SHOW;
+        }
+    });
+    function changeScore(d) { score += d; scoreEl.textContent = score; }
+
+    // ---------------- Throwing ---------------------------------------------
+    const WINDUP = 0.18, FOLLOW = 0.35, FLIGHT = 0.7, DROP = 0.35;
+    function throwTo(index) {
+        box = { mode: "held", target: index };
+        setPhase("throw");
+    }
+    function heldBoxPos() {
+        // in front of the cat's chest, raised over the head while winding up
+        let y = GROUND - 56, x = cat.x + (cat.facingLeft ? -18 : 18);
+        if (phase === "throw" && phaseTime < WINDUP) { y = GROUND - 56 - (phaseTime / WINDUP) * 60; x = cat.x - 4; }
+        if (phase === "enter" || phase === "leave") y += Math.abs(Math.sin(cat.walkTimer * 30)) * -3;
+        return { x, y };
+    }
+
+    // ---------------- Update ------------------------------------------------
+    function update(dt) {
+        if (state !== "playing") return;
+        timeLeft -= dt;
+        if (timeLeft <= 0) { timeLeft = 0; state = "over"; return; }
+        phaseTime += dt;
+        noTimer = Math.max(0, noTimer - dt);
+        praiseTimer = Math.max(0, praiseTimer - dt);
+
+        if (phase === "enter") {
+            walk(dt, 1);
+            if (cat.x >= CAT_HOME) { cat.x = CAT_HOME; cat.frame = 0; setPhase("ask"); }
+        } else if (phase === "ask") {
+            if (phaseTime >= HINT_AFTER) setPhase("hint");
+        } else if (phase === "hint") {
+            if (phaseTime >= HINT_SHOW) throwTo(item.can);    // cat does it itself, no points
+        } else if (phase === "throw") {
+            updateThrow();
+        } else if (phase === "leave") {
+            walk(dt, -1);
+            if (cat.x < -70) startRound();
+        }
+    }
+    function walk(dt, dir) {
+        cat.facingLeft = dir < 0;
+        cat.x += dir * CAT_WALK * dt;
+        cat.walkTimer += dt;
+        if (cat.walkTimer >= 0.08) { cat.walkTimer = 0; cat.frame = (cat.frame + 1) % images.frames.length; }
+    }
+    function updateThrow() {
+        const t = phaseTime;
+        // cat body pose (built from your frames: lean back, then lean forward)
+        if (t < WINDUP) cat.pose = { frame: 0, rot: -0.14 * (t / WINDUP), sx: 1, sy: 1 };
+        else if (t < WINDUP + FOLLOW) cat.pose = { frame: 1, rot: 0.16, sx: 1.04, sy: 0.97 };
+        else cat.pose = null;
+
+        if (t >= WINDUP && box && box.mode === "held") {
+            const start = heldBoxPos();
+            box = { mode: "flying", target: box.target, sx: start.x, sy: GROUND - 116, t: 0 };
+        }
+        if (box && box.mode === "flying") {
+            box.t = (t - WINDUP) / FLIGHT;
+            if (box.t >= 1) box = { mode: "dropping", target: box.target, t: 0 };
+        }
+        if (box && box.mode === "dropping" && t >= WINDUP + FLIGHT + DROP) {
+            box = null;                           // it's inside the can now
+        }
+        if (!box && t >= WINDUP + FLIGHT + DROP + 0.15) setPhase("leave");
+    }
+    function boxDrawState() {
+        if (!box) return null;
+        if (box.mode === "held") { const p = heldBoxPos(); return { x: p.x, y: p.y, s: 1, rot: 0, behindFront: false }; }
+        const tx = CANS[box.target].x, endY = RIM_Y - 34;
+        if (box.mode === "flying") {
+            const u = Math.min(1, box.t);
+            const peak = Math.min(box.sy, endY) - 120;
+            // quadratic bezier: start -> peak -> can opening
+            const cx = (box.sx + tx) / 2, cy = 2 * peak - (box.sy + endY) / 2;
+            const x = (1 - u) * (1 - u) * box.sx + 2 * (1 - u) * u * cx + u * u * tx;
+            const y = (1 - u) * (1 - u) * box.sy + 2 * (1 - u) * u * cy + u * u * endY;
+            return { x, y, s: 1 - 0.2 * u, rot: u * Math.PI * 1.5, behindFront: false };
+        }
+        // dropping into the can: drawn between the can's inside and its front
+        const u = Math.min(1, (phaseTime - WINDUP - FLIGHT) / DROP);
+        return { x: tx, y: endY + u * 80, s: 0.8, rot: Math.PI * 1.5, behindFront: true };
+    }
+
+    // ---------------- Render ------------------------------------------------
+    function drawBox(b) {
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        ctx.scale(b.s, b.s);
+        ctx.drawImage(images.box, -BOX_W / 2, -BOX_H / 2, BOX_W, BOX_H);
+        ctx.restore();
+    }
+    function drawCat() {
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.beginPath(); ctx.ellipse(cat.x, GROUND + 2, 28, 6, 0, 0, Math.PI * 2); ctx.fill();
+        const p = cat.pose || { frame: cat.frame, rot: 0, sx: 1, sy: 1 };
+        ctx.save();
+        ctx.imageSmoothingQuality = "high";
+        ctx.translate(cat.x, GROUND + 1);
+        if (cat.facingLeft) ctx.scale(-1, 1);
+        ctx.rotate(p.rot);
+        ctx.scale(p.sx, p.sy);
+        ctx.drawImage(images.frames[p.frame], SRC.x, SRC.y, SRC.w, SRC.h, -CAT_W * BODY_CENTER, -CAT_H, CAT_W, CAT_H);
+        ctx.restore();
+    }
+    function signLabels() {
+        ctx.save();
+        ctx.textAlign = "center";
+        for (const c of CANS) {
+            ctx.fillStyle = "#fffdf4";
+            ctx.strokeStyle = "#111"; ctx.lineWidth = 4;
+            ctx.font = `30px ${FONT}`;
+            ctx.strokeText(c.key, c.x, 228); ctx.fillText(c.key, c.x, 228);
+            ctx.font = `${c.name.length > 10 ? 17 : 20}px ${FONT}`;
+            ctx.lineWidth = 3;
+            ctx.strokeText(c.name, c.x, 252); ctx.fillText(c.name, c.x, 252);
+        }
+        ctx.restore();
+    }
+    function bubble(lines, color = "#fffdf4", textColor = "#111") {
+        // comic speech bubble above the cat
+        ctx.save();
+        const pad = 16;
+        ctx.font = `20px ${FONT}`;
+        const sizes = lines.map(l => l.size || 20);
+        const widths = lines.map((l, i) => { ctx.font = `${sizes[i]}px ${FONT}`; return ctx.measureText(l.text).width; });
+        const w = Math.max(160, Math.max(...widths) + pad * 2);
+        const h = sizes.reduce((a, s) => a + s * 1.15, 0) + pad * 1.6;
+        const x = Math.max(16, Math.min(cat.x - 60, VW - w - 16)), y = 176 - h;
+        const tipX = cat.x + 6, tipY = GROUND - CAT_H - 8;
+        ctx.fillStyle = color; ctx.strokeStyle = "#111"; ctx.lineWidth = 4; ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(x + 50, y + h - 2); ctx.lineTo(tipX, tipY); ctx.lineTo(x + 86, y + h - 2);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#111"; ctx.fillRect(x + 6, y + 6, w, h);
+        ctx.fillStyle = color; ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h);
+        ctx.fillRect(x + 52, y + h - 6, 32, 10);   // hide the joint between bubble and tail
+        ctx.fillStyle = textColor; ctx.textAlign = "left"; ctx.textBaseline = "top";
+        let ty = y + pad * 0.8;
+        lines.forEach((l, i) => { ctx.font = `${sizes[i]}px ${FONT}`; ctx.fillText(l.text, x + pad, ty); ty += sizes[i] * 1.15; });
+        ctx.restore();
+    }
+    function banner(title, subtitle, color) {
+        ctx.save();
+        ctx.textAlign = "center";
+        const w = 520, h = 120, x = VW / 2 - w / 2, y = 60;
+        ctx.fillStyle = "#111"; ctx.fillRect(x + 6, y + 6, w, h);
+        ctx.fillStyle = color; ctx.fillRect(x, y, w, h);
+        ctx.lineWidth = 4; ctx.strokeStyle = "#111"; ctx.strokeRect(x, y, w, h);
+        ctx.font = `54px ${FONT}`; ctx.lineWidth = 6; ctx.fillStyle = "#fffdf4";
+        ctx.strokeText(title, VW / 2, y + 62); ctx.fillText(title, VW / 2, y + 62);
+        ctx.font = `24px ${FONT}`; ctx.fillStyle = "#111";
+        ctx.fillText(subtitle, VW / 2, y + 100);
+        ctx.restore();
+    }
+
+    function render() {
+        ctx.drawImage(images.city, 0, 0, VW, VH);
+        ctx.drawImage(images.cansBack, 0, 0);
+        signLabels();
+        const b = state === "playing" ? boxDrawState() : null;
+        if (b && b.behindFront) drawBox(b);
+        ctx.drawImage(images.cansFront, 0, 0);
+        if (state !== "title") drawCat();
+        if (b && !b.behindFront) drawBox(b);
+
+        if (state === "playing") {
+            if (noTimer > 0) {
+                bubble([{ text: "NO!", size: 48 }], "#ff3b3b", "#fffdf4");
+            } else if (phase === "ask") {
+                bubble([{ text: "What's in the box?", size: 20 }, { text: cap(item.label), size: 34 }]);
+            } else if (phase === "hint") {
+                const c = CANS[item.can];
+                bubble([{ text: `${cap(item.label)} goes in...`, size: 20 }, { text: `${c.key}: ${c.name}`, size: 34 }], "#ffd23f");
+            } else if (praiseTimer > 0) {
+                bubble([{ text: "Nice!", size: 40 }], "#7dff9b");
+            }
+        }
+        if (state === "title") banner("Cat Sorts the Trash", "Press Enter to start", "#3a86ff");
+        if (state === "over") banner("END OF THE GAME", `Final score: ${score}   ·   Press Enter for a new game`, "#ff3b3b");
+
+        const t = Math.ceil(state === "title" ? GAME_TIME : timeLeft);
+        timerEl.textContent = `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+    }
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+    // ---------------- Loop --------------------------------------------------
+    let last = 0;
+    function loop(ts) {
+        let dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
+        last = ts;
+        while (dt > 0) { const s = Math.min(dt, 1 / 120); update(s); dt -= s; }
+        render();
+        requestAnimationFrame(loop);
+    }
+
+    Promise.all([
+        loadImage(IMAGE_FILES.city),
+        loadImage(IMAGE_FILES.cansBack),
+        loadImage(IMAGE_FILES.cansFront),
+        loadImage(IMAGE_FILES.box),
+        Promise.all(IMAGE_FILES.frames.map(loadImage))
+    ]).then(([city, cansBack, cansFront, boxImg, frames]) => {
+        images = { city, cansBack, cansFront, box: boxImg, frames };
+        requestAnimationFrame(loop);
+        if (document.fonts) document.fonts.ready.then(render);
+    }).catch((err) => {
+        console.error(err);
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, VW, VH);
+        ctx.fillStyle = "#111"; ctx.font = "20px sans-serif";
+        ctx.fillText("Images not found. Keep the images folder next to this HTML file.", 30, 50);
+    });
+
+    // for testing
+    window.__sort = { get state() { return state; }, get phase() { return phase; }, get item() { return item; }, get score() { return score; }, get box() { return box; }, get timeLeft() { return timeLeft; }, set timeLeft(v) { timeLeft = v; }, update };
+    </script>
+</body>
+</html>
