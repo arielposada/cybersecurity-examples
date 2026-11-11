@@ -109,13 +109,18 @@
     const GROUND = 458;                 // sidewalk line in city.png
     const FONT = `Bangers, Impact, "Arial Black", sans-serif`;
 
-    // ---------------- Images (relative paths) -----------------------------
+    // ---------------- Images ----------------------------------------------
+    const pagePath = window.location.pathname;
+    const pageDirectory = /\/[^/]*\.[^/]+$/.test(pagePath)
+        ? pagePath.replace(/[^/]*$/, "")
+        : `${pagePath.replace(/\/$/, "")}/`;
+    const assetUrl = (path) => new URL(path, `${window.location.origin}${pageDirectory}`).href;
     const IMAGE_FILES = {
-        city: "./images/city.png",
-        cansBack: "./images/cans_back.png",     // signs + inside of the cans
-        cansFront: "./images/cans_front.png",   // can bodies (hide the box as it drops in)
-        box: "./images/box.png",
-        frames: [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`)
+        city: assetUrl("./images/city.png"),
+        cansBack: assetUrl("./images/cans_back.png"),     // signs + inside of the cans
+        cansFront: assetUrl("./images/cans_front.png"),   // can bodies (hide the box as it drops in)
+        box: assetUrl("./images/box.png"),
+        frames: [1, 2, 3, 4, 5].map(n => assetUrl(`./images/cat/frame_${n}.png`))
     };
     const loadImage = (src) => new Promise((resolve, reject) => {
         const img = new Image();

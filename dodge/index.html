@@ -104,12 +104,17 @@
     const VW = canvas.width, VH = canvas.height;
     const GROUND = 458;                       // where the cat's feet touch the sidewalk
 
-    // ---------------- Images (relative paths) -----------------------------
+    // ---------------- Images ----------------------------------------------
+    const pagePath = window.location.pathname;
+    const pageDirectory = /\/[^/]*\.[^/]+$/.test(pagePath)
+        ? pagePath.replace(/[^/]*$/, "")
+        : `${pagePath.replace(/\/$/, "")}/`;
+    const assetUrl = (path) => new URL(path, `${window.location.origin}${pageDirectory}`).href;
     const IMAGE_FILES = {
-        city: "./images/city.png",
-        food: "./images/junk_food.png",
-        heart: "./images/heart.png",
-        frames: [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`)
+        city: assetUrl("./images/city.png"),
+        food: assetUrl("./images/junk_food.png"),
+        heart: assetUrl("./images/heart.png"),
+        frames: [1, 2, 3, 4, 5].map(n => assetUrl(`./images/cat/frame_${n}.png`))
     };
     const loadImage = (src) => new Promise((resolve, reject) => {
         const img = new Image();
