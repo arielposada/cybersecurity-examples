@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Traffic Light</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ================= Top bar ================= -->
+    <header class="topbar">
+        <div class="title">
+            <span class="lights" aria-hidden="true"><i class="l-red"></i><i class="l-yellow"></i><i class="l-green"></i></span>
+            <span>Internet Traffic Light</span>
+        </div>
+
+        <div class="teams">
+            <div class="team" id="team0">
+                <div class="team-name" id="teamName0">Team 1</div>
+                <div class="team-score" id="teamScore0">0</div>
+            </div>
+            <div class="team" id="team1">
+                <div class="team-name" id="teamName1">Team 2</div>
+                <div class="team-score" id="teamScore1">0</div>
+            </div>
+        </div>
+
+        <div class="corner">
+            <button class="small-btn" id="finishBtn" type="button" hidden>Finish</button>
+            <img class="logo" src="images/tecmilenio_logo.png" alt="Tecmilenio" onerror="this.style.display='none'">
+        </div>
+    </header>
+
+    <!-- ================= Board ================= -->
+    <main class="board" id="board" aria-label="Game board"></main>
+
+    <!-- ================= Start screen ================= -->
+    <section class="overlay" id="startScreen">
+        <div class="panel start-panel">
+            <h1>Internet Traffic Light</h1>
+            <p class="lead">
+                <b class="g">Green</b> means go, <b class="y">yellow</b> means slow down, <b class="r">red</b> means stop!
+            </p>
+            <div class="name-inputs">
+                <label>Team 1 <input id="nameInput0" type="text" value="Team 1" maxlength="16"></label>
+                <label>Team 2 <input id="nameInput1" type="text" value="Team 2" maxlength="16"></label>
+            </div>
+            <button class="big-btn" id="startBtn" type="button">Start game</button>
+            <p class="small">Teams take turns picking a card. Some cards are surprises that add or take away points!</p>
+        </div>
+    </section>
+
+    <!-- ================= Card modal ================= -->
+    <section class="overlay" id="cardModal" hidden>
+        <div class="panel card-panel" id="cardPanel">
+            <div class="card-head" id="cardHead">
+                <span id="cardTurn">Team 1</span>
+                <span class="points" id="cardPoints">15</span>
+            </div>
+            <div class="card-body">
+                <figure class="joke">
+                    <img id="cardImage" src="" alt="">
+                    <figcaption id="cardJoke"></figcaption>
+                </figure>
+                <p class="question" id="cardQuestion"></p>
+                <div class="answers" id="cardAnswers"></div>
+                <p class="special-text" id="specialText" hidden></p>
+            </div>
+            <div class="card-foot">
+                <button class="big-btn" id="nextBtn" type="button" hidden>Next turn</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= End screen ================= -->
+    <section class="overlay" id="endScreen" hidden>
+        <div class="panel end-panel">
+            <h1>Final scores</h1>
+            <div class="final-scores">
+                <div class="final"><div class="final-name" id="finalName0">Team 1</div><div class="final-score" id="finalScore0">0</div></div>
+                <div class="final"><div class="final-name" id="finalName1">Team 2</div><div class="final-score" id="finalScore1">0</div></div>
+            </div>
+            <button class="big-btn" id="againBtn" type="button">Play again</button>
+        </div>
+    </section>
+
+    <!-- ================= The cat ================= -->
+    <div class="cat" id="cat" aria-hidden="true">
+        <div class="bubble" id="catBubble">OK!</div>
+        <div class="cat-crop" id="catCrop"><img id="catImg" src="images/cat/frame_1.png" alt=""></div>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
