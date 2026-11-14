@@ -18,8 +18,7 @@ const QUESTIONS = [
         ]
     },
     {
-        question: "Most used web browsers",
-        // Order from StatCounter worldwide browser share, October 2026
+        question: "Most used web browsers", 
         answers: [
             "Chrome",
             "Safari",
@@ -75,7 +74,7 @@ const QUESTIONS = [
             "Make your account private",
             "Review your privacy settings",
             "Turn off location sharing",
-            "Accept only people you know",
+            "Accept only people you know IRL",
             "Think before you post",
             "Don't share your address or school",
             "Limit who can tag you",
@@ -102,10 +101,8 @@ const QUESTIONS = [
             "Your passwords",
             "Your home address",
             "Your phone number",
-            "Bank card details",
             "ID numbers (like your CURP)",
             "Your real-time location",
-            "Private photos",
             "Your daily routine"
         ]
     },
@@ -113,11 +110,10 @@ const QUESTIONS = [
         question: "Rules of netiquette",
         answers: [
             "Be respectful",
-            "Don't write in ALL CAPS",
+            "Don't write in ALL CAPS or send SPAM",
             "Think before you post",
             "Respect other people's privacy",
             "Credit your sources",
-            "Don't spam",
             "Check before you share"
         ]
     },
@@ -126,8 +122,6 @@ const QUESTIONS = [
         answers: [
             "Check the source",
             "Read beyond the headline",
-            "Check the date",
-            "Look for the author",
             "Compare with other sources",
             "Check if images are real",
             "Watch for alarming language",
@@ -152,8 +146,7 @@ const QUESTIONS = [
             "Turn off notifications",
             "No screens before bed",
             "Take regular breaks",
-            "No phones during meals",
-            "Move and exercise",
+            "No phones during meals", 
             "Have offline hobbies"
         ]
     }
