@@ -15,13 +15,13 @@ const MAX_STRIKES = 8;
 const CONGRATS_ON_SHOW_ALL = false;   // true = also play the fanfare when 0 shows the answers
 
 const SOUND_FILES = {
-    ding: "sounds/ding.mp3",
-    strike: "sounds/strike.mp3",
-    congrats: "sounds/congrats.mp3",
-    flip: "sounds/flip.mp3",
-    whoosh: "sounds/whoosh.mp3",
-    intro: "sounds/intro.mp3",
-    showAll: "sounds/show_all.mp3"
+    ding: "./sounds/ding.mp3",
+    strike: "./sounds/strike.mp3",
+    congrats: "./sounds/congrats.mp3",
+    flip: "./sounds/flip.mp3",
+    whoosh: "./sounds/whoosh.mp3",
+    intro: "./sounds/intro.mp3",
+    showAll: "./sounds/show_all.mp3"
 };
 
 const LINES = {
