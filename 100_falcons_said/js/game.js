@@ -324,6 +324,10 @@ function popBubble() {
 }
 
 function falconShow(mode, text, kind, holdMs, withWhoosh = false) {
+
+    // Patch
+    withWhoosh = false; // Disable whoosh sound for now 
+
     const token = ++falcon.token;
     clearTimeout(falcon.hideTimer);
 
@@ -340,6 +344,8 @@ function falconShow(mode, text, kind, holdMs, withWhoosh = false) {
         setBubble(text, kind);
         falcon.el.classList.add("active");
         falcon.visible = true;
+        
+        // If we want to play the whoosh sound, we'll do it here
         if (withWhoosh) play("whoosh", 0.7);
         falcon.anim = falcon.el.animate(
             [{ transform: AWAY[mode] }, { transform: SHOWN[mode] }],
