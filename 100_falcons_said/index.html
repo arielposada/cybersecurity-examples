@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Falcons Said</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ================= Corner buttons ================= -->
+    <div class="corner-tools">
+        <button class="tool" id="muteBtn" type="button" aria-pressed="false" title="Sound on/off">Sound: on</button>
+        <button class="tool" id="fullBtn" type="button" title="Full screen">Full screen</button>
+    </div>
+
+    <!-- ================= Main menu ================= -->
+    <section class="screen menu" id="menu">
+        <header class="menu-head">
+            <div class="logo" aria-label="100 Falcons Said">
+                <span class="logo-100">100</span>
+                <span class="logo-words">Falcons Said</span>
+            </div>
+            <div class="menu-host" aria-hidden="true">
+                <div class="bubble neutral show">Pick a question!</div>
+                <img src="images/falcon.png" alt="">
+            </div>
+        </header>
+        <p class="menu-hint">Choose a board with the mouse, or use the arrow keys and press <b>Enter</b>.</p>
+        <div class="question-grid" id="questionGrid"></div>
+        <div class="keys-help">
+            <span><b>1</b>&ndash;<b>9</b> reveal an answer</span>
+            <span><b>Q</b> strike</span>
+            <span><b>0</b> show all answers</span>
+            <span><b>Enter</b> back to the menu when the board is finished</span>
+            <span><b>Esc</b> leave a board early</span>
+        </div>
+    </section>
+
+    <!-- ================= Game board ================= -->
+    <section class="screen game" id="game" hidden>
+        <header class="game-head">
+            <button class="tool back-btn" id="backBtn" type="button">&larr; Menu</button>
+            <div class="logo small" aria-hidden="true">
+                <span class="logo-100">100</span>
+                <span class="logo-words">Falcons Said</span>
+            </div>
+        </header>
+
+        <div class="stage">
+            <h1 class="question" id="questionText"></h1>
+            <div class="marquee">
+                <div class="board" id="board"></div>
+            </div>
+            <div class="status">
+                <div class="strikes" aria-label="Strikes">
+                    <span class="status-label">Strikes</span>
+                    <div class="strike-row" id="strikeRow"></div>
+                </div>
+                <div class="found"><span class="status-label">Found</span> <b id="foundCount">0 / 0</b></div>
+            </div>
+        </div>
+
+        <div class="foot-area">
+            <footer class="game-foot" id="gameFoot">
+                <span><b>1</b>&ndash;<b id="maxKey">9</b> reveal</span>
+                <span><b>Q</b> strike</span>
+                <span><b>0</b> show all</span>
+                <span><b>Esc</b> menu</span>
+            </footer>
+            <div class="finish-prompt" id="finishPrompt" hidden>Press <b>Enter</b> to go back to the menu</div>
+        </div>
+    </section>
+
+    <!-- ================= Effects ================= -->
+    <div class="big-x" id="bigX" aria-hidden="true">X</div>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+    <!-- ================= The falcon host ================= -->
+    <div class="falcon" id="falcon" aria-hidden="true">
+        <div class="bubble" id="falconBubble"></div>
+        <div class="falcon-body" id="falconBody"><img src="images/falcon.png" alt=""></div>
+    </div>
+    <div class="sr-only" id="announcer" role="status" aria-live="polite"></div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
