@@ -102,7 +102,7 @@ function openCard(i) {
     if (card.kind === "question") {
         const q = card.data;
         $("cardPoints").textContent = `${card.points} pts`;
-        $("cardImage").src = `./images/jokes/${q.img}.png`;
+        $("cardImage").src = `traffic_light/images/jokes/${q.img}.png`;
         $("cardImage").alt = "";
         $("cardJoke").textContent = JOKES[q.img] || "";
         $("cardJoke").hidden = !JOKES[q.img];
@@ -128,7 +128,7 @@ function openCard(i) {
         const win = card.points > 0;
         head.classList.add(win ? "special-plus" : "special-minus");
         $("cardPoints").textContent = win ? "Surprise!" : "Oh no!";
-        $("cardImage").src = win ? "./images/jokes/bonus.png" : "./images/jokes/oops.png";
+        $("cardImage").src = win ? "traffic_light/images/jokes/bonus.png" : "traffic_light/images/jokes/oops.png";
         $("cardImage").alt = win ? "A gift box" : "A little bug";
         $("cardJoke").hidden = false;
         $("cardJoke").textContent = win
@@ -205,7 +205,7 @@ function showEnd() {
 }
 
 // ---------------- The cat: walks in, says something, walks out ----------------
-const CAT_FRAMES = [1, 2, 3, 4, 5].map(n => `./images/cat/frame_${n}.png`);
+const CAT_FRAMES = [1, 2, 3, 4, 5].map(n => `traffic_light/images/cat/frame_${n}.png`);
 CAT_FRAMES.forEach(src => { const img = new Image(); img.src = src; });   // preload
 
 const cat = {
