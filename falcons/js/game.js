@@ -283,6 +283,7 @@ function renderScores(popTeam = -1) {
         if (i === popTeam) bump(card);
         $(`menuName${i}`).textContent = t.name;
         $(`menuScore${i}`).textContent = t.score;
+        $(`menuName${i}`).parentElement.classList.toggle("next", i === nextTeam);   // team that plays the next board
     });
     $("bankValue").textContent = bank;
     $("bankMult").hidden = !board || board.multiplier === 1;

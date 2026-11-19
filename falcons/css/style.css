@@ -591,6 +591,28 @@ b { font-weight: 600; }
 .menu-team.team-a { box-shadow: 4px 4px 0 var(--team-a); }
 .menu-team.team-b { box-shadow: 4px 4px 0 var(--team-b); }
 .menu-team-name { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the team that plays the next board: bigger, gold and bouncing */
+.menu-team { position: relative; transition: transform .2s ease, background .2s ease; }
+.menu-team.next {
+    background: var(--gold);
+    font-size: clamp(1.25rem, 3vh, 1.6rem);
+    animation: next-team 1.2s ease-in-out infinite;
+}
+.menu-team.next::before {
+    content: "Up next!";
+    position: absolute;
+    top: -14px;
+    left: 10px;
+    font-family: var(--title);
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    padding: 0 8px;
+    background: var(--green);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+}
+@keyframes next-team { 50% { transform: translateY(-5px) scale(1.05); } }
 .menu-team b { font-family: var(--title); font-weight: normal; font-size: 1.6em; line-height: 1; letter-spacing: 0.03em; }
 .menu-actions { display: flex; gap: 12px; }
 .winner-btn { background: var(--gold); }
@@ -637,6 +659,9 @@ b { font-weight: 600; }
 }
 .team-card.playing { background: var(--gold); transform: translateY(-2px); }
 .team-card.playing .team-tag { display: block; background: var(--green); color: var(--paper); }
+/* the playing team's name is bigger and moves, so nobody gets confused */
+.team-card.playing .team-name { font-size: clamp(1.25rem, 3vh, 1.65rem); animation: name-bob 1.2s ease-in-out infinite; }
+@keyframes name-bob { 50% { transform: translateY(-3px) scale(1.06); } }
 .team-card.stealing { background: #ffd0d0; transform: translateY(-2px); animation: pulse 1s ease-in-out infinite; }
 .team-card.stealing .team-tag { display: block; background: var(--red); color: var(--paper); }
 .team-card.pop, .bank-value.pop { animation: score-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
@@ -822,6 +847,6 @@ b { font-weight: 600; }
     .scoreboard { flex-wrap: wrap; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .marquee, .menu-host img, .finish-prompt, .tile, .team-card.stealing, .steal-btn.on { animation: none; }
+    .marquee, .menu-host img, .finish-prompt, .tile, .team-card.stealing, .steal-btn.on, .menu-team.next, .team-card.playing .team-name { animation: none; }
     .tile-inner { transition-duration: .2s; }
 }
