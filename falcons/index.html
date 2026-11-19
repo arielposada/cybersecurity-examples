@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Falcons Said</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="falcons/css/style.css">
+</head>
+<body>
+    <!-- ================= Corner buttons ================= -->
+    <div class="corner-tools">
+        <button class="tool" id="muteBtn" type="button" aria-pressed="false" title="Sound on/off">Sound: on</button>
+        <button class="tool" id="fullBtn" type="button" title="Full screen">Full screen</button>
+    </div>
+
+    <!-- ================= Team setup (start of the game) ================= -->
+    <section class="screen menu setup" id="setup">
+        <header class="menu-head">
+            <div class="logo" aria-label="100 Falcons Said">
+                <span class="logo-100">100</span>
+                <span class="logo-words">Falcons Said</span>
+            </div>
+            <div class="menu-host" aria-hidden="true">
+                <div class="bubble neutral show">Name your teams!</div>
+                <img src="falcons/images/falcon.png" alt="">
+            </div>
+        </header>
+        <form class="setup-card" id="setupForm" autocomplete="off">
+            <h2 class="setup-title">Teams</h2>
+            <div class="setup-teams">
+                <label class="setup-field team-a">
+                    <span>Team 1</span>
+                    <input id="team1Name" type="text" maxlength="24" placeholder="Team 1">
+                </label>
+                <span class="setup-vs" aria-hidden="true">VS</span>
+                <label class="setup-field team-b">
+                    <span>Team 2</span>
+                    <input id="team2Name" type="text" maxlength="24" placeholder="Team 2">
+                </label>
+            </div>
+            <div class="setup-actions">
+                <button class="tool big" id="startGameBtn" type="submit">Start game</button>
+                <button class="tool" id="continueBtn" type="button" hidden>Continue last game</button>
+            </div>
+        </form>
+        <div class="source-box">
+            <p class="source-note" id="sourceNote">Loading questions&hellip;</p>
+            <ul class="source-warnings" id="sourceWarnings" hidden></ul>
+            <button class="tool" id="loadJsonBtn" type="button">Load questions file (.json)</button>
+            <input id="jsonFile" type="file" accept=".json,application/json" hidden>
+        </div>
+    </section>
+
+    <!-- ================= Main menu ================= -->
+    <section class="screen menu" id="menu" hidden>
+        <header class="menu-head">
+            <div class="logo" aria-label="100 Falcons Said">
+                <span class="logo-100">100</span>
+                <span class="logo-words">Falcons Said</span>
+            </div>
+            <div class="menu-host" aria-hidden="true">
+                <div class="bubble neutral show">Pick a question!</div>
+                <img src="falcons/images/falcon.png" alt="">
+            </div>
+        </header>
+        <div class="menu-bar">
+            <div class="menu-scores">
+                <div class="menu-team team-a"><span class="menu-team-name" id="menuName0"></span><b id="menuScore0">0</b></div>
+                <div class="menu-team team-b"><span class="menu-team-name" id="menuName1"></span><b id="menuScore1">0</b></div>
+            </div>
+            <div class="menu-actions">
+                <button class="tool winner-btn" id="resultsBtn" type="button">Who won? Final scores</button>
+                <button class="tool" id="newGameBtn" type="button">New game</button>
+            </div>
+        </div>
+        <p class="menu-hint">Choose a board with the mouse, or use the arrow keys and press <b>Enter</b>.</p>
+        <div class="question-grid" id="questionGrid"></div>
+        <div class="keys-help">
+            <span><b>1</b>&ndash;<b>9</b> reveal an answer (or click it)</span>
+            <span><b>&larr;</b> <b>&rarr;</b> playing team</span>
+            <span><b>Q</b> strike</span>
+            <span><b>S</b> steal on/off</span>
+            <span><b>0</b> show all answers</span>
+            <span><b>Enter</b> back to the menu when the board is finished</span>
+            <span><b>Esc</b> leave a board early</span>
+        </div>
+    </section>
+
+    <!-- ================= Game board ================= -->
+    <section class="screen game" id="game" hidden>
+        <header class="game-head">
+            <div class="head-left">
+                <button class="tool back-btn" id="backBtn" type="button">&larr; Menu</button>
+                <button class="tool steal-btn" id="stealBtn" type="button" aria-pressed="false" title="Steal mode (S)">Steal: off</button>
+                <button class="tool fail-btn" id="failBtn" type="button" title="The steal failed (Q)" hidden>Fail &#10007;</button>
+            </div>
+            <div class="scoreboard" aria-label="Scoreboard">
+                <button class="team-card team-a" id="teamBtn0" type="button" title="Make this the playing team (&larr;)">
+                    <span class="team-tag"></span>
+                    <span class="team-name"></span>
+                    <span class="team-score">0</span>
+                </button>
+                <div class="bank" title="Points on the board this round">
+                    <span class="bank-label">Round</span>
+                    <span class="bank-value" id="bankValue">0</span>
+                    <span class="bank-mult" id="bankMult" hidden>x2</span>
+                </div>
+                <button class="team-card team-b" id="teamBtn1" type="button" title="Make this the playing team (&rarr;)">
+                    <span class="team-tag"></span>
+                    <span class="team-name"></span>
+                    <span class="team-score">0</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="stage">
+            <h1 class="question" id="questionText"></h1>
+            <div class="marquee">
+                <div class="board" id="board"></div>
+            </div>
+            <div class="status">
+                <div class="strikes" aria-label="Strikes">
+                    <span class="status-label">Strikes</span>
+                    <div class="strike-row" id="strikeRow"></div>
+                </div>
+                <div class="found"><span class="status-label">Found</span> <b id="foundCount">0 / 0</b></div>
+            </div>
+        </div>
+
+        <div class="foot-area">
+            <footer class="game-foot" id="gameFoot">
+                <span><b>1</b>&ndash;<b id="maxKey">9</b> reveal</span>
+                <span><b>&larr;</b> <b>&rarr;</b> team</span>
+                <span id="strikeKeyHelp"><b>Q</b> strike</span>
+                <span><b>S</b> steal</span>
+                <span><b>0</b> show all</span>
+                <span><b>Esc</b> menu</span>
+            </footer>
+            <div class="finish-prompt" id="finishPrompt" hidden><span class="finish-result" id="finishResult"></span> Press <b>Enter</b> to go back to the menu</div>
+        </div>
+    </section>
+
+    <!-- ================= Final results ================= -->
+    <section class="screen results" id="results" hidden>
+        <div class="logo small" aria-hidden="true">
+            <span class="logo-100">100</span>
+            <span class="logo-words">Falcons Said</span>
+        </div>
+        <h1 class="results-title" id="winnerText"></h1>
+        <div class="final-scores" id="finalScores"></div>
+        <p class="results-meta" id="resultsMeta"></p>
+        <div class="results-actions">
+            <button class="tool big" id="resultsBackBtn" type="button">&larr; Back to the menu</button>
+            <button class="tool" id="resultsNewBtn" type="button">New game</button>
+        </div>
+    </section>
+
+    <!-- ================= Effects ================= -->
+    <div class="big-x" id="bigX" aria-hidden="true">X</div>
+    <div class="award" id="award" aria-hidden="true">
+        <span class="award-points" id="awardPoints"></span>
+        <span class="award-team" id="awardTeam"></span>
+        <span class="award-note" id="awardNote"></span>
+    </div>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+    <!-- ================= The falcon host ================= -->
+    <div class="falcon" id="falcon" aria-hidden="true">
+        <div class="bubble" id="falconBubble"></div>
+        <div class="falcon-body" id="falconBody"><img src="falcons/images/falcon.png" alt=""></div>
+    </div>
+    <div class="sr-only" id="announcer" role="status" aria-live="polite"></div>
+
+    <script src="falcons/js/questions.js"></script>
+    <script src="falcons/js/game.js"></script>
+</body>
+</html>

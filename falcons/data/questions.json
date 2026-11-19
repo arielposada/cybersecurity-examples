@@ -1,0 +1,151 @@
+{
+    "settings": {
+        "maxStrikes": 8
+    },
+    "rounds": [
+        {
+            "question": "Main causes of the digital divide",
+            "answers": [
+                { "text": "Socioeconomic", "points": 35 },
+                { "text": "Regional", "points": 24 },
+                { "text": "Gender-based", "points": 17 },
+                { "text": "Lack of training", "points": 14 },
+                { "text": "Language and cultural barriers", "points": 10 }
+            ]
+        },
+        {
+            "question": "Most used web browsers",
+            "answers": [
+                { "text": "Chrome", "points": 41 },
+                { "text": "Safari", "points": 22 },
+                { "text": "Edge", "points": 15 },
+                { "text": "Firefox", "points": 11 },
+                { "text": "Opera", "points": 7 },
+                { "text": "Midori", "points": 4 }
+            ]
+        },
+        {
+            "question": "Things that make up your digital footprint",
+            "answers": [
+                { "text": "Social media posts", "points": 25 },
+                { "text": "Photos and videos", "points": 18 },
+                { "text": "Comments", "points": 14 },
+                { "text": "Likes and shares", "points": 12 },
+                { "text": "Search history", "points": 10 },
+                { "text": "Location data", "points": 9 },
+                { "text": "Online purchases", "points": 7 },
+                { "text": "Websites you visit (cookies)", "points": 5 }
+            ]
+        },
+        {
+            "question": "Best ways to keep your passwords safe",
+            "answers": [
+                { "text": "Save them in a password manager", "points": 22 },
+                { "text": "Make them long (passphrases)", "points": 18 },
+                { "text": "Turn on two-step verification", "points": 15 },
+                { "text": "Never reuse a password", "points": 13 },
+                { "text": "Never share them", "points": 11 },
+                { "text": "No sticky notes on the screen", "points": 9 },
+                { "text": "Avoid birthdays and names", "points": 7 },
+                { "text": "Change them after a data breach", "points": 5 }
+            ]
+        },
+        {
+            "question": "Things that are part of digital culture",
+            "answers": [
+                { "text": "Social networks", "points": 21 },
+                { "text": "Memes", "points": 17 },
+                { "text": "Streaming series and music", "points": 14 },
+                { "text": "Video games", "points": 12 },
+                { "text": "Online communities", "points": 10 },
+                { "text": "Content creators", "points": 9 },
+                { "text": "Emojis", "points": 7 },
+                { "text": "Online shopping", "points": 6 },
+                { "text": "Remote work and study", "points": 4 }
+            ]
+        },
+        {
+            "question": "Ways to protect your privacy on social media",
+            "answers": [
+                { "text": "Make your account private", "points": 20 },
+                { "text": "Review your privacy settings", "points": 16 },
+                { "text": "Turn off location sharing", "points": 14 },
+                { "text": "Accept only people you know IRL", "points": 12 },
+                { "text": "Think before you post", "points": 10 },
+                { "text": "Don't share your address or school", "points": 9 },
+                { "text": "Limit who can tag you", "points": 7 },
+                { "text": "Delete old posts you regret", "points": 6 },
+                { "text": "Log out on shared devices", "points": 4 }
+            ]
+        },
+        {
+            "question": "Signs of a phishing message",
+            "answers": [
+                { "text": "Urgent or threatening tone", "points": 23 },
+                { "text": "Asks for passwords or bank data", "points": 19 },
+                { "text": "Suspicious links", "points": 16 },
+                { "text": "Unknown sender", "points": 12 },
+                { "text": "Spelling mistakes", "points": 10 },
+                { "text": "Prizes too good to be true", "points": 8 },
+                { "text": "Unexpected attachments", "points": 6 },
+                { "text": "Generic greeting (\"Dear user\")", "points": 4 }
+            ]
+        },
+        {
+            "question": "Things you should never share online",
+            "answers": [
+                { "text": "Your passwords", "points": 32 },
+                { "text": "Your home address", "points": 24 },
+                { "text": "Your phone number", "points": 16 },
+                { "text": "ID numbers (like your CURP)", "points": 12 },
+                { "text": "Your real-time location", "points": 9 },
+                { "text": "Your daily routine", "points": 5 }
+            ]
+        },
+        {
+            "question": "Rules of netiquette",
+            "answers": [
+                { "text": "Be respectful", "points": 34 },
+                { "text": "Don't write in ALL CAPS or send SPAM", "points": 21 },
+                { "text": "Think before you post", "points": 15 },
+                { "text": "Respect other people's privacy", "points": 12 },
+                { "text": "Credit your sources", "points": 9 },
+                { "text": "Check before you share", "points": 6 }
+            ]
+        },
+        {
+            "question": "How to spot fake news",
+            "answers": [
+                { "text": "Check the source", "points": 31 },
+                { "text": "Read beyond the headline", "points": 22 },
+                { "text": "Compare with other sources", "points": 17 },
+                { "text": "Check if images are real", "points": 13 },
+                { "text": "Watch for alarming language", "points": 9 },
+                { "text": "Use fact-checking sites", "points": 6 }
+            ]
+        },
+        {
+            "question": "What to do if you see cyberbullying",
+            "answers": [
+                { "text": "Don't respond or fight back", "points": 27 },
+                { "text": "Save evidence (screenshots)", "points": 21 },
+                { "text": "Block the bully", "points": 17 },
+                { "text": "Report it on the platform", "points": 14 },
+                { "text": "Tell a trusted adult or teacher", "points": 12 },
+                { "text": "Support the person being bullied", "points": 7 }
+            ]
+        },
+        {
+            "question": "Healthy digital wellbeing habits",
+            "multiplier": 2,
+            "answers": [
+                { "text": "Set screen time limits", "points": 29 },
+                { "text": "Turn off notifications", "points": 22 },
+                { "text": "No screens before bed", "points": 17 },
+                { "text": "Take regular breaks", "points": 13 },
+                { "text": "No phones during meals", "points": 9 },
+                { "text": "Have offline hobbies", "points": 6 }
+            ]
+        }
+    ]
+}
